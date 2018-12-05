@@ -20,6 +20,7 @@ export const tokenGuard: (() => RequestHandler) = (() => (req, res, next) => {
   const token = getTokenFromHeaders(req.headers) || req.query.token || req.body.token || "";
   const hasAccess = userService.verifyToken(token);
 
+  // @ts-ignore
   hasAccess.then((a) => {
     if (!a) {
       return res.status(403).send({ message: "No access" });
