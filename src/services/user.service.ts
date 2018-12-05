@@ -1,6 +1,6 @@
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
-import * as Bluebird from "Bluebird";
+import * as Bluebird from "bluebird";
 import { User, UserModel, UserAddModel, UserViewModel } from "../models/user.model";
 
 export class UserService {
