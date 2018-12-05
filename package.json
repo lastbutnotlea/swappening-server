@@ -19,6 +19,7 @@
     "tsutils": "~3.5.0",
     "typescript": "~3.1.6"
   },
+  "main": "build/src/index.js",
   "scripts": {
     "clean": "rimraf coverage build tmp",
     "build": "tsc -p tsconfig.release.json",
@@ -30,6 +31,7 @@
   "author": "Jakub Synowiec <github@jakubsynowiec.info>",
   "license": "Apache-2.0",
   "dependencies": {
+    "express": "^4.16.4",
     "tslib": "~1.9.3"
   }
 }
