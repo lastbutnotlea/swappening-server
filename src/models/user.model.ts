@@ -4,13 +4,13 @@ import { sequelize } from "../instances/sequelize";
 export interface UserAddModel {
   email: string;
   password: string;
-  nickName: string;
+  nickname: string;
 }
 
 export interface UserModel extends Sequelize.Model<UserModel, UserAddModel> {
   id: number;
   email: string;
-  nickName: string;
+  nickname: string;
   password: string;
   createdAt: string;
   updatedAt: string;
@@ -29,7 +29,7 @@ export const User = sequelize.define<UserModel, UserAddModel>("user", {
   },
   email: Sequelize.STRING,
   password: Sequelize.STRING,
-  nickName: Sequelize.STRING,
+  nickname: Sequelize.STRING,
 });
 
 User.sync();

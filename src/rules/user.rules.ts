@@ -7,6 +7,8 @@ export const userRules = {
     check("email")
       .isEmail().withMessage("Invalid email format")
       .custom((email) => User.findOne({ where: { email } }).then((u) => !!!u)).withMessage("Email exists"),
+    check("nickname")
+      .exists({checkFalsy: true}).withMessage("The nickname must not be empty"),
     check("password")
       .isLength({ min: 8 }).withMessage("Invalid password"),
     check("confirmPassword")

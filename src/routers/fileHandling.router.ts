@@ -11,7 +11,7 @@ export const fileRouter = Router();
 
 
 // Protected Upload
-fileRouter.post("/upload", upload.single("data"), function (req, res, next) {
+fileRouter.post("/upload", upload.single("data"), async (req, res) => {
   // req.file is the `data` file
   // req.body will hold the text fields, if there were any
   res.json(req.file.filename);

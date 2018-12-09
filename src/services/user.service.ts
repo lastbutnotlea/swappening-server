@@ -15,10 +15,10 @@ export class UserService {
   private readonly _saltRounds = 12;
   private readonly _jwtSecret = "0.rfyj3n9nzh";
 
-  public register({ email, password, nickName }: UserAddModel) {
+  public register({ email, password, nickname }: UserAddModel) {
     return bcrypt.hash(password, this._saltRounds)
       .then((hash) => {
-        return User.create({ email, password: hash, nickName })
+        return User.create({ email, password: hash, nickname: nickname })
           .then((u) => this.getUserById(u!.id));
       });
   }
