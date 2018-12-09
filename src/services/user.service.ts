@@ -18,7 +18,7 @@ export class UserService {
   public register({ email, password, nickname }: UserAddModel) {
     return bcrypt.hash(password, this._saltRounds)
       .then((hash) => {
-        return User.create({ email, password: hash, nickname: nickname })
+        return User.create({ email, password: hash, nickname })
           .then((u) => this.getUserById(u!.id));
       });
   }

@@ -1,4 +1,3 @@
-import * as jwt from "jsonwebtoken";
 import { IncomingHttpHeaders } from "http";
 import { RequestHandler } from "express";
 import { UserService } from "../services/user.service";

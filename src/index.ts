@@ -1,11 +1,10 @@
 import * as express from "express";
 import {Request, Response} from "express";
-import { sequelize } from "./instances/sequelize";
 import * as cors from "cors";
 import * as bodyParser from "body-parser";
 import { userRouter } from "./routers/user.router";
 import { tokenGuard } from "./middlewares/token-guard";
-import { fileRouter } from './routers/fileHandling.router';
+import { fileRouter } from "./routers/fileHandling.router";
 
 // app
 const app = express();
@@ -35,6 +34,3 @@ app.get("/some-protected-resource", (req: Request, res: Response, next) => {
 app.listen(port, () => {
   console.log(`App is listening on port ${port}`);
 });
-
-// TODO: Delete this later
-sequelize.toString();
