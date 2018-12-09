@@ -1,5 +1,3 @@
-// FileName: index.ts
-// Import express
 import * as express from "express";
 import {Request, Response} from "express";
 import { sequelize } from "./instances/sequelize";

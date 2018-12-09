@@ -6,7 +6,7 @@ export const userRules = {
   forRegister: [
     check("email")
       .isEmail().withMessage("Invalid email format")
-      .custom((email) => User.find({ where: { email } }).then((u) => !!!u)).withMessage("Email exists"),
+      .custom((email) => User.findOne({ where: { email } }).then((u) => !!!u)).withMessage("Email exists"),
     check("password")
       .isLength({ min: 8 }).withMessage("Invalid password"),
     check("confirmPassword")

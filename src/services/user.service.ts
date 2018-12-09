@@ -15,10 +15,10 @@ export class UserService {
   private readonly _saltRounds = 12;
   private readonly _jwtSecret = "0.rfyj3n9nzh";
 
-  public register({ email, password }: UserAddModel) {
+  public register({ email, password, nickName }: UserAddModel) {
     return bcrypt.hash(password, this._saltRounds)
       .then((hash) => {
-        return User.create({ email, password: hash })
+        return User.create({ email, password: hash, nickName })
           .then((u) => this.getUserById(u!.id));
       });
   }
@@ -38,7 +38,7 @@ export class UserService {
           return;
         }
 
-        UserService._user = User.findById(decoded.id);
+        UserService._user = User.findByPk(decoded.id);
         resolve(true);
         return;
       });
@@ -46,7 +46,7 @@ export class UserService {
   }
 
   public getUserById(id: number) {
-    return User.findById(id, {
+    return User.findByPk(id, {
       attributes: UserService.userAttributes,
     }) as Bluebird<UserViewModel>;
   }
