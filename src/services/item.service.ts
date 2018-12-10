@@ -13,9 +13,7 @@ export class ItemService {
     return ["pictureStorageName", "itemId", "originalName"];
   }
 
-  public addItem({ headline, description }: ItemAddModel) {
-    const ownerId: number = UserService.user.id;
-
+  public addItem({ headline, description}: ItemAddModel, ownerId: number) {
     return Item.create({ ownerId, headline, description })
       .then((u) => this.getItemById(u.id));
   }

@@ -1,22 +1,20 @@
-import * as bcrypt from "bcrypt";
-import * as jwt from "jsonwebtoken";
-import * as Bluebird from "bluebird";
-import { User, UserModel, UserAddModel, UserViewModel } from "../models/user.model";
+import * as bcrypt from 'bcrypt';
+import * as jwt from 'jsonwebtoken';
+import * as Bluebird from 'bluebird';
+import { User, UserModel, UserAddModel, UserViewModel } from '../models/user.model';
 
 export class UserService {
 
   static get userAttributes() {
     return ["id", "email"];
   }
-  static get user() {
-    return UserService._user;
-  }
+
   private static _user;
-  private readonly _saltRounds = 12;
-  private readonly _jwtSecret = "0.rfyj3n9nzh";
+  private static readonly _saltRounds = 12;
+  private static readonly _jwtSecret = '0.rfyj3n9nzh';
 
   public register({ email, password, nickname }: UserAddModel) {
-    return bcrypt.hash(password, this._saltRounds)
+    return bcrypt.hash(password, UserService._saltRounds)
       .then((hash) => {
         return User.create({ email, password: hash, nickname })
           .then((u) => this.getUserById(u!.id));
@@ -26,24 +24,33 @@ export class UserService {
   public login({ email }: UserAddModel) {
     return User.findOne({ where: { email } }).then((u) => {
       const { id, email } = u!;
-      return { token: jwt.sign({ id, email }, this._jwtSecret) };
+      return { token: jwt.sign({ id, email }, UserService._jwtSecret) };
     });
   }
 
   public verifyToken(token: string) {
     return new Promise((resolve, reject) => {
-      jwt.verify(token, this._jwtSecret, (err, decoded) => {
+      jwt.verify(token, UserService._jwtSecret, (err, decoded) => {
         if (err) {
           resolve(false);
           return;
         }
-
-        UserService._user = User.findByPk(decoded.id);
         resolve(true);
         return;
       });
     }) as Promise<boolean>;
   }
+
+  public static getUserFromToken(token: string): number {
+    let authorization = token,
+      decoded;
+    try {
+      decoded = jwt.verify(authorization, UserService._jwtSecret);
+    } catch (e) {
+      return -1;
+    }
+    return decoded.id;
+  };
 
   public getUserById(id: number) {
     return User.findByPk(id, {

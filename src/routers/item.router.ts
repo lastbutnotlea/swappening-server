@@ -6,6 +6,7 @@ import { ItemAddModel } from "../models/item.model";
 import { ItemService } from "../services/item.service";
 import { PictureAddModel } from "../models/picture.model";
 import * as multer from "multer";
+import { UserService } from '../services/user.service';
 
 export const itemRouter = Router();
 const itemService = new ItemService();
@@ -24,9 +25,11 @@ itemRouter.post("/addItem", itemRules.itemAdd, (req, res) => {
     return res.status(422).json(errors.array());
   }
 
+  const ownerId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
+
   // ToDo: This line does not work. For whatever reason
   const payload = matchedData(req) as ItemAddModel;
-  const item = itemService.addItem(payload);
+  const item = itemService.addItem(payload, ownerId);
 
   return item.then((u) => res.json(u));
 });
