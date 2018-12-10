@@ -5,16 +5,19 @@ import { Item } from "./item.model";
 export interface PictureAddModel {
   pictureStorageName: string;
   itemId: number;
+  originalName: string;
 }
 
 export interface PictureModel extends Sequelize.Model<PictureViewModel, PictureAddModel> {
   pictureStorageName: string;
   itemId: number;
+  originalName: string;
 }
 
 export interface PictureViewModel {
   pictureStorageName: string;
   itemId: number;
+  originalName: string;
 }
 
 export const Picture = sequelize.define<PictureViewModel, PictureAddModel>("pictures", {
@@ -29,6 +32,9 @@ export const Picture = sequelize.define<PictureViewModel, PictureAddModel>("pict
       key: "id",
       deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE,
     },
+  },
+  originalName: {
+    type: Sequelize.STRING(32),
   },
 });
 
