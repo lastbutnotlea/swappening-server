@@ -1,7 +1,7 @@
-import * as bcrypt from 'bcrypt';
-import * as jwt from 'jsonwebtoken';
-import * as Bluebird from 'bluebird';
-import { User, UserModel, UserAddModel, UserViewModel } from '../models/user.model';
+import * as bcrypt from "bcrypt";
+import * as jwt from "jsonwebtoken";
+import * as Bluebird from "bluebird";
+import { User, UserModel, UserAddModel, UserViewModel } from "../models/user.model";
 
 export class UserService {
 
@@ -9,28 +9,64 @@ export class UserService {
     return ["id", "email"];
   }
 
-  private static _user;
-  private static readonly _saltRounds = 12;
-  private static readonly _jwtSecret = '0.rfyj3n9nzh';
+  /**
+   * gets the user id from a given token
+   * @param token
+   */
+  public static getUserFromToken(token: string): number {
+    let decoded;
+    try {
+      decoded = jwt.verify(token, UserService.jwtSecret);
+    } catch (e) {
+      return -1;
+    }
+    return decoded.id;
+  }
 
+  /**
+   * Returns user data for a given id
+   * @param id
+   */
+  public static getUserById(id: number) {
+    return User.findByPk(id, {
+      attributes: UserService.userAttributes,
+    }) as Bluebird<UserViewModel>;
+  }
+  private static readonly saltRounds = 12;
+  private static readonly jwtSecret = "0.rfyj3n9nzh";
+
+  /**
+   * Lets people register
+   * @param email
+   * @param password
+   * @param nickname
+   */
   public register({ email, password, nickname }: UserAddModel) {
-    return bcrypt.hash(password, UserService._saltRounds)
+    return bcrypt.hash(password, UserService.saltRounds)
       .then((hash) => {
         return User.create({ email, password: hash, nickname })
-          .then((u) => this.getUserById(u!.id));
+          .then((u) => UserService.getUserById(u!.id));
       });
   }
 
+  /**
+   * Logs in, generates and returns a new session token
+   * @param email
+   */
   public login({ email }: UserAddModel) {
     return User.findOne({ where: { email } }).then((u) => {
       const { id, email } = u!;
-      return { token: jwt.sign({ id, email }, UserService._jwtSecret) };
+      return { token: jwt.sign({ id, email }, UserService.jwtSecret) };
     });
   }
 
+  /**
+   * Verifies a given token
+   * @param token
+   */
   public verifyToken(token: string) {
     return new Promise((resolve, reject) => {
-      jwt.verify(token, UserService._jwtSecret, (err, decoded) => {
+      jwt.verify(token, UserService.jwtSecret, (err, decoded) => {
         if (err) {
           resolve(false);
           return;
@@ -39,22 +75,5 @@ export class UserService {
         return;
       });
     }) as Promise<boolean>;
-  }
-
-  public static getUserFromToken(token: string): number {
-    let authorization = token,
-      decoded;
-    try {
-      decoded = jwt.verify(authorization, UserService._jwtSecret);
-    } catch (e) {
-      return -1;
-    }
-    return decoded.id;
-  };
-
-  public getUserById(id: number) {
-    return User.findByPk(id, {
-      attributes: UserService.userAttributes,
-    }) as Bluebird<UserViewModel>;
   }
 }

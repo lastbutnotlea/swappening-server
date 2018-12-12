@@ -45,6 +45,26 @@ itemRouter.get("/getItem/:id", (req, res) => {
 });
 
 /**
+ * Returns number of next items for a certain user.
+ * Pictures have to be loaded manually later
+ */
+itemRouter.get("/getItemsForUser/:userId/:number", (req, res) => {
+  // TODO Verify id
+  const item = itemService.getItemsForUser(req.params.userId, req.params.number);
+  return item.then((u) => res.json(u));
+});
+
+/**
+ * Returns all items of a certain user.
+ * Pictures have to be loaded manually later
+ */
+itemRouter.get("/getItemsOfUser/:userId", (req, res) => {
+  // TODO Verify id
+  const item = itemService.getItemsOfUser(req.params.userId);
+  return item.then((u) => res.json(u));
+});
+
+/**
  *  This is a endpoint for uploading form-data which contains the image and the itemId for the image
  */
 itemRouter.post("/addPictureToItem", upload.single("data"), (req, res) => {
