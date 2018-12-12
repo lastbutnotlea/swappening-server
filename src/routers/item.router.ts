@@ -48,7 +48,7 @@ itemRouter.get('/getItem/:id', (req, res) => {
  * Returns all item data.
  * Pictures have to be loaded manually later
  */
-itemRouter.post('/updateItem/:id', (req, res) => {
+itemRouter.put('/updateItem/:id', (req, res) => {
   // TODO Verify id
   const newItem: ItemModel = {
     'id': req.params.id,
