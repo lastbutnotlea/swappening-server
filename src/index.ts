@@ -23,9 +23,11 @@ app.get("/some-resource", (req: Request, res: Response, next) => {
   res.json("Hello World");
 });
 
-app.use(tokenGuard());
 
 app.use("/files", fileRouter);
+
+app.use(tokenGuard());
+
 app.use("/item", itemRouter);
 
 // Protected Get
