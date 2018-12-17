@@ -124,6 +124,9 @@ export class ItemService {
   public getAllPicturesByItemId(id: number) {
     return Picture.findAll({
       where: { itemId: id },
+      order: [
+        ["createdAt", "desc"],
+      ],
       attributes: ItemService.pictureAttributes,
     }) as Array<Bluebird<PictureViewModel>>;
   }
