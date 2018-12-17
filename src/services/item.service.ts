@@ -62,6 +62,9 @@ export class ItemService {
     return Item.findByPk(id, {
       attributes: ItemService.itemAttributes,
       include: [Picture],
+      order: [
+        [Picture, 'updatedAt', 'desc'],
+      ],
     }) as Bluebird<ItemViewModel>;
   }
 
@@ -78,6 +81,7 @@ export class ItemService {
     return Item.findAll({
       order: [
         [Sequelize.literal('RANDOM()')],
+        [Picture, 'updatedAt', 'desc'],
       ], attributes: ItemService.itemAttributes,
       limit: number,
       include: [Picture],
@@ -96,6 +100,9 @@ export class ItemService {
       where: { ownerId: userId },
       attributes: ItemService.itemAttributes,
       include: [Picture],
+      order: [
+        [Picture, 'updatedAt', 'desc']
+      ],
     }) as Bluebird<ItemViewModel>;
   }
 
