@@ -1,17 +1,18 @@
-import * as Bluebird from 'bluebird';
-import { Item, ItemAddModel, ItemModel, ItemViewModel } from '../models/item.model';
-import { UserService } from './user.service';
-import { Picture, PictureAddModel, PictureViewModel } from '../models/picture.model';
-import { Sequelize } from 'sequelize';
+import * as Bluebird from "bluebird";
+import { Item, ItemAddModel, ItemModel, ItemViewModel } from "../models/item.model";
+import { Picture, PictureAddModel, PictureViewModel } from "../models/picture.model";
+import { Sequelize } from "sequelize";
+import * as fs from "fs";
+
 
 export class ItemService {
 
   static get itemAttributes() {
-    return ['id', 'headline', 'description'];
+    return ["id", "headline", "description"];
   }
 
   static get pictureAttributes() {
-    return ['pictureStorageName', 'itemId', 'originalName'];
+    return ["pictureStorageName", "itemId", "originalName"];
   }
 
   /**
@@ -25,27 +26,44 @@ export class ItemService {
       .then((u) => this.getItemById(u.id));
   }
 
+  /**
+   * Deletes an item and all pictures with given number
+   * @param id
+   */
+  public deleteItem(id: number) {
+    const promises: Sequelize.Promise[] = [];
+    /* .then Throws an error if there is no picture on an item */
+    Picture.findAll({ where: { itemId: id } }).then((res) => {
+      res.forEach((pic) => {
+        promises.push(this.deletePicture(pic.pictureStorageName));
+      });
+      Promise.all(promises).then(() => {
+        Item.destroy({ where: { id } });
+      });
+    });
+  }
+
   public updateItem({ id, headline, description, ownerId }: ItemModel) {
-    let promises: Sequelize.Promise[] = [];
+    const promises: Sequelize.Promise[] = [];
     if (headline != null) {
       promises.push(Item.update({
-        headline: headline,
+        headline,
       }, {
-        where: { id: id },
+        where: { id },
       }));
     }
     if (description != null) {
       promises.push(Item.update({
-        description: description,
+        description,
       }, {
-        where: { id: id },
+        where: { id },
       }));
     }
     if (ownerId != null) {
       promises.push(Item.update({
-        ownerId: ownerId,
+        ownerId,
       }, {
-        where: { id: id },
+        where: { id },
       }));
     }
     return Promise.all(promises).then(() => this.getItemById(id));
@@ -56,14 +74,14 @@ export class ItemService {
    * @param id
    */
   public getItemById(id: number) {
-    Item.hasMany(Picture, { foreignKey: 'itemId' });
-    Picture.belongsTo(Item, { foreignKey: 'itemId' });
+    Item.hasMany(Picture, { foreignKey: "itemId" });
+    Picture.belongsTo(Item, { foreignKey: "itemId" });
 
     return Item.findByPk(id, {
       attributes: ItemService.itemAttributes,
       include: [Picture],
       order: [
-        [Picture, 'updatedAt', 'desc'],
+        [Picture, "updatedAt", "desc"],
       ],
     }) as Bluebird<ItemViewModel>;
   }
@@ -75,13 +93,13 @@ export class ItemService {
    * @param number
    */
   public getItemsForUser(userId: number, number: number) {
-    Item.hasMany(Picture, { foreignKey: 'itemId' });
-    Picture.belongsTo(Item, { foreignKey: 'itemId' });
+    Item.hasMany(Picture, { foreignKey: "itemId" });
+    Picture.belongsTo(Item, { foreignKey: "itemId" });
 
     return Item.findAll({
       order: [
-        [Sequelize.literal('RANDOM()')],
-        [Picture, 'updatedAt', 'desc'],
+        [Sequelize.literal("RANDOM()")],
+        [Picture, "updatedAt", "desc"],
       ], attributes: ItemService.itemAttributes,
       limit: number,
       include: [Picture],
@@ -93,15 +111,15 @@ export class ItemService {
    * @param userId
    */
   public getItemsOfUser(userId: number) {
-    Item.hasMany(Picture, { foreignKey: 'itemId' });
-    Picture.belongsTo(Item, { foreignKey: 'itemId' });
+    Item.hasMany(Picture, { foreignKey: "itemId" });
+    Picture.belongsTo(Item, { foreignKey: "itemId" });
 
     return Item.findAll({
       where: { ownerId: userId },
       attributes: ItemService.itemAttributes,
       include: [Picture],
       order: [
-        [Picture, 'updatedAt', 'desc']
+        [Picture, "updatedAt", "desc"],
       ],
     }) as Bluebird<ItemViewModel>;
   }
@@ -115,6 +133,22 @@ export class ItemService {
   public addPicture({ itemId, originalName, pictureStorageName }: PictureAddModel) {
     return Picture.create({ pictureStorageName, itemId, originalName })
       .then(() => this.getAllPicturesByItemId(itemId));
+  }
+
+  /**
+   * Deletes a picture from the database and removes it from storage
+   * @param pictureStorageName
+   */
+  public deletePicture(pictureStorageName: string) {
+    Picture.destroy({
+      where: {
+        pictureStorageName,
+      },
+    }).then(
+      fs.unlink("uploads/" + pictureStorageName, (res) => {
+        return res;
+      }),
+    );
   }
 
   /**
