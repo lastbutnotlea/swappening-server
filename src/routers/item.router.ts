@@ -37,13 +37,13 @@ itemRouter.post("/addItem", itemRules.itemAdd, async (req, res) => {
 
   const tagArray = req.body.tags;
   if (tagArray !== null) {
-    for (const tag of tagArray) {
-      const tagId = await tagService.getTagIdByTagName(tag);
+    for (const tagElement of tagArray) {
+      const tag = await tagService.getTagByTagName(tagElement);
       const tagToItem: TaggedItemAddModel = {
-        tagId,
+        tagId: tag.id,
         itemId: item.id,
       };
-      taggedItemService.addTagToItem(tagToItem);
+      await taggedItemService.addTagToItem(tagToItem);
       /*if ( tagId !== -1 ) {
         const taggedItem = { tagId, itemId: item.id };
         taggedItemService.addTagToItem(taggedItem);
