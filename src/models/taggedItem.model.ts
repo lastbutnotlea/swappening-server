@@ -9,16 +9,23 @@ export interface TaggedItemAddModel {
 }
 
 export interface TaggedItemModel extends Sequelize.Model<TaggedItemViewModel, TaggedItemAddModel> {
+  id: number;
   tagId: number;
   itemId: number;
 }
 
 export interface TaggedItemViewModel {
+  id: number;
   tagId: number;
   itemId: number;
 }
 
 export const TaggedItem = sequelize.define<TaggedItemViewModel, TaggedItemAddModel>("taggedItem", {
+  id: {
+    type: Sequelize.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
   tagId: {
     type: Sequelize.INTEGER,
     references: {

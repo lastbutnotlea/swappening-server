@@ -11,5 +11,5 @@ export const itemRules = {
   itemGet: [
     check("itemId")
       .exists({ checkFalsy: true }).withMessage("Item Id must be specified"),
-  ]
+  ],
 };

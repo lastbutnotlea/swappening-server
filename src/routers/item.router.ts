@@ -1,44 +1,65 @@
-import { Router } from 'express';
-import { matchedData } from 'express-validator/filter';
-import { validationResult } from 'express-validator/check';
-import { itemRules } from '../rules/item.rules';
-import { ItemAddModel, ItemModel } from '../models/item.model';
-import { ItemService } from '../services/item.service';
-import { PictureAddModel } from '../models/picture.model';
-import * as multer from 'multer';
-import { UserService } from '../services/user.service';
+import { Router } from "express";
+import { matchedData } from "express-validator/filter";
+import { validationResult } from "express-validator/check";
+import { itemRules } from "../rules/item.rules";
+import { ItemAddModel, ItemModel } from "../models/item.model";
+import { ItemService } from "../services/item.service";
+import { PictureAddModel } from "../models/picture.model";
+import * as multer from "multer";
+import { UserService } from "../services/user.service";
+import { TaggedItemService } from "../services/taggedItem.service";
+import { TagService } from "../services/tag.service";
+import { TaggedItemAddModel, TaggedItemModel } from "../models/taggedItem.model";
 
 export const itemRouter = Router();
 const itemService = new ItemService();
+const taggedItemService = new TaggedItemService();
+const tagService = new TagService();
 
 // setup
-const UPLOAD_PATH = 'uploads';
+const UPLOAD_PATH = "uploads";
 const upload = multer({ dest: `${UPLOAD_PATH}/` }); // multer configuration
 
 /**
  * Endpoint for uploading images
  */
-itemRouter.post('/addItem', itemRules.itemAdd, (req, res) => {
+itemRouter.post("/addItem", itemRules.itemAdd, async (req, res) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
     return res.status(422).json(errors.array());
   }
 
-  const ownerId: number = UserService.getUserFromToken(req.headers.authorization.split(' ')[1]);
+  const ownerId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
 
-  // ToDo: This line does not work. For whatever reason
-  const payload = matchedData(req) as ItemAddModel;
-  const item = itemService.addItem(payload, ownerId);
+  const payloadItem = matchedData(req) as ItemAddModel;
+  const item = await itemService.addItem(payloadItem, ownerId);
 
-  return item.then((u) => res.json(u));
+  const tagArray = req.body.tags;
+  if (tagArray !== null) {
+    for (const tag of tagArray) {
+      const tagId = await tagService.getTagIdByTagName(tag);
+      const tagToItem: TaggedItemAddModel = {
+        tagId,
+        itemId: item.id,
+      };
+      taggedItemService.addTagToItem(tagToItem);
+      /*if ( tagId !== -1 ) {
+        const taggedItem = { tagId, itemId: item.id };
+        taggedItemService.addTagToItem(taggedItem);
+      }
+      */
+    }
+  }
+
+  return res.json(item);
 });
 
 /**
  * Returns all item data.
  * Pictures have to be loaded manually later
  */
-itemRouter.get('/getItem/:id', (req, res) => {
+itemRouter.get("/getItem/:id", (req, res) => {
   // TODO Verify id
   const item = itemService.getItemById(req.params.id);
   return item.then((u) => res.json(u));
@@ -48,15 +69,15 @@ itemRouter.get('/getItem/:id', (req, res) => {
  * Returns all item data.
  * Pictures have to be loaded manually later
  */
-itemRouter.put('/updateItem/:id', (req, res) => {
+itemRouter.put("/updateItem/:id", (req, res) => {
   // TODO Verify id
   const newItem: ItemModel = {
-    'id': req.params.id,
-    'headline': req.body.headline,
-    'description': req.body.description,
-    'ownerId': req.body.ownerId,
-    'createdAt': '',
-    'updatedAt': '',
+    id: req.params.id,
+    headline: req.body.headline,
+    description: req.body.description,
+    ownerId: req.body.ownerId,
+    createdAt: "",
+    updatedAt: "",
   };
   const item = itemService.updateItem(newItem);
   return item.then((u) => res.json(u));
@@ -66,7 +87,7 @@ itemRouter.put('/updateItem/:id', (req, res) => {
  * Returns number of next items for a certain user.
  * Pictures have to be loaded manually later
  */
-itemRouter.get('/getItemsForUser/:userId/:number', (req, res) => {
+itemRouter.get("/getItemsForUser/:userId/:number", (req, res) => {
   // TODO Verify id
   const item = itemService.getItemsForUser(req.params.userId, req.params.number);
   return item.then((u) => res.json(u));
@@ -76,7 +97,7 @@ itemRouter.get('/getItemsForUser/:userId/:number', (req, res) => {
  * Returns all items of a certain user.
  * Pictures have to be loaded manually later
  */
-itemRouter.get('/getItemsOfUser/:userId', (req, res) => {
+itemRouter.get("/getItemsOfUser/:userId", (req, res) => {
   // TODO Verify id
   const item = itemService.getItemsOfUser(req.params.userId);
   return item.then((u) => res.json(u));
@@ -85,7 +106,7 @@ itemRouter.get('/getItemsOfUser/:userId', (req, res) => {
 /**
  *  This is a endpoint for uploading form-data which contains the image and the itemId for the image
  */
-itemRouter.post('/addPictureToItem', upload.single('data'), (req, res) => {
+itemRouter.post("/addPictureToItem", upload.single("data"), (req, res) => {
   // TODO Verify these Parameters
   const payload: PictureAddModel = {
     itemId: req.body.itemId,
