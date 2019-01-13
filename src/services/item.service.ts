@@ -1,18 +1,18 @@
-import * as Bluebird from "bluebird";
-import { Item, ItemAddModel, ItemModel, ItemViewModel } from "../models/item.model";
-import { Picture, PictureAddModel, PictureViewModel } from "../models/picture.model";
-import { Sequelize } from "sequelize";
-import * as fs from "fs";
+import * as Bluebird from 'bluebird';
+import { Item, ItemAddModel, ItemModel, ItemViewModel } from '../models/item.model';
+import { Picture, PictureAddModel, PictureViewModel } from '../models/picture.model';
+import { Sequelize } from 'sequelize';
+import * as fs from 'fs';
 
 
 export class ItemService {
 
   static get itemAttributes() {
-    return ["id", "headline", "description"];
+    return ['id', 'headline', 'description'];
   }
 
   static get pictureAttributes() {
-    return ["pictureStorageName", "itemId", "originalName"];
+    return ['pictureStorageName', 'itemId', 'originalName'];
   }
 
   /**
@@ -74,14 +74,14 @@ export class ItemService {
    * @param id
    */
   public getItemById(id: number) {
-    Item.hasMany(Picture, { foreignKey: "itemId" });
-    Picture.belongsTo(Item, { foreignKey: "itemId" });
+    Item.hasMany(Picture, { foreignKey: 'itemId' });
+    Picture.belongsTo(Item, { foreignKey: 'itemId' });
 
     return Item.findByPk(id, {
       attributes: ItemService.itemAttributes,
       include: [Picture],
       order: [
-        [Picture, "updatedAt", "desc"],
+        [Picture, 'order', 'asc'],
       ],
     }) as Bluebird<ItemViewModel>;
   }
@@ -93,13 +93,13 @@ export class ItemService {
    * @param number
    */
   public getItemsForUser(userId: number, number: number) {
-    Item.hasMany(Picture, { foreignKey: "itemId" });
-    Picture.belongsTo(Item, { foreignKey: "itemId" });
+    Item.hasMany(Picture, { foreignKey: 'itemId' });
+    Picture.belongsTo(Item, { foreignKey: 'itemId' });
 
     return Item.findAll({
       order: [
-        [Sequelize.literal("RANDOM()")],
-        [Picture, "updatedAt", "desc"],
+        [Sequelize.literal('RANDOM()')],
+        [Picture, 'order', 'asc'],
       ], attributes: ItemService.itemAttributes,
       limit: number,
       include: [Picture],
@@ -111,15 +111,15 @@ export class ItemService {
    * @param userId
    */
   public getItemsOfUser(userId: number) {
-    Item.hasMany(Picture, { foreignKey: "itemId" });
-    Picture.belongsTo(Item, { foreignKey: "itemId" });
+    Item.hasMany(Picture, { foreignKey: 'itemId' });
+    Picture.belongsTo(Item, { foreignKey: 'itemId' });
 
     return Item.findAll({
       where: { ownerId: userId },
       attributes: ItemService.itemAttributes,
       include: [Picture],
       order: [
-        [Picture, "updatedAt", "desc"],
+        [Picture, 'order', 'asc'],
       ],
     }) as Bluebird<ItemViewModel>;
   }
@@ -145,7 +145,7 @@ export class ItemService {
         pictureStorageName,
       },
     }).then(
-      fs.unlink("uploads/" + pictureStorageName, (res) => {
+      fs.unlink('uploads/' + pictureStorageName, (res) => {
         return res;
       }),
     );
@@ -159,9 +159,31 @@ export class ItemService {
     return Picture.findAll({
       where: { itemId: id },
       order: [
-        ["createdAt", "desc"],
+        ['order', 'asc'],
       ],
       attributes: ItemService.pictureAttributes,
     }) as Array<Bluebird<PictureViewModel>>;
+  }
+
+  /**
+   * Updates the
+   * @param images
+   * @param itemId
+   */
+  public updateImageOrder(images: any[], itemId: number) {
+    const promises: Sequelize.Promise[] = [];
+    images.forEach((img) => {
+      promises.push(Picture.update({
+        order: img.order,
+      }, {
+        where: {
+          pictureStorageName: img.pictureStorageName,
+          itemId,
+        },
+      }));
+    });
+
+    return Promise.all(promises).then(() =>
+      this.getAllPicturesByItemId(itemId));
   }
 }

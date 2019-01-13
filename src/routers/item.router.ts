@@ -136,3 +136,9 @@ itemRouter.delete("/deletePicture/:storageName", (req, res) => {
   itemService.deletePicture(req.params.storageName);
   return res.status(200).json("success");
 });
+
+itemRouter.put("/updatePictureOrder/:itemId", (req, res) => {
+  const item = itemService.updateImageOrder(req.body, req.params.itemId);
+  return item.then((u) =>
+    res.json(u));
+});

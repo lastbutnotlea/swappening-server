@@ -12,12 +12,14 @@ export interface PictureModel extends Sequelize.Model<PictureViewModel, PictureA
   pictureStorageName: string;
   itemId: number;
   originalName: string;
+  order: number;
 }
 
 export interface PictureViewModel {
   pictureStorageName: string;
   itemId: number;
   originalName: string;
+  order: number;
 }
 
 export const Picture = sequelize.define<PictureViewModel, PictureAddModel>("pictures", {
@@ -35,6 +37,9 @@ export const Picture = sequelize.define<PictureViewModel, PictureAddModel>("pict
   },
   originalName: {
     type: Sequelize.STRING(32),
+  },
+  order: {
+    type: Sequelize.INTEGER,
   },
 });
 
