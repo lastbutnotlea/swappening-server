@@ -21,7 +21,7 @@ const UPLOAD_PATH = "uploads";
 const upload = multer({ dest: `${UPLOAD_PATH}/` }); // multer configuration
 
 /**
- * Endpoint for uploading images
+ * Route for uploading images
  */
 itemRouter.post("/addItem", itemRules.itemAdd, async (req, res) => {
   const errors = validationResult(req);
@@ -66,11 +66,21 @@ itemRouter.get("/getItem/:id", (req, res) => {
 });
 
 /**
+ * Route for deleting an items
+ */
+itemRouter.delete("/deleteItem/:id", (req, res) => {
+  // TODO Protect against other users
+  itemService.deleteItem(req.params.id);
+  return res.status(200).json("success");
+});
+
+/**
  * Returns all item data.
  * Pictures have to be loaded manually later
  */
 itemRouter.put("/updateItem/:id", (req, res) => {
   // TODO Verify id
+  // TODO Verify user id
   const newItem: ItemModel = {
     id: req.params.id,
     headline: req.body.headline,
@@ -118,3 +128,11 @@ itemRouter.post("/addPictureToItem", upload.single("data"), (req, res) => {
   return picture.then((u) => res.json(u));
 });
 
+/**
+ * Route for deleting an item
+ */
+itemRouter.delete("/deletePicture/:storageName", (req, res) => {
+  // TODO Protect
+  itemService.deletePicture(req.params.storageName);
+  return res.status(200).json("success");
+});
