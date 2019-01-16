@@ -5,7 +5,7 @@ import * as bodyParser from "body-parser";
 import { userRouter } from "./routers/user.router";
 import { tokenGuard } from "./middlewares/token-guard";
 import { fileRouter } from "./routers/fileHandling.router";
-import { itemRouter } from "./routers/item.router";
+import { eventRouter } from "./routers/event.router";
 
 // app
 const app = express();
@@ -28,7 +28,7 @@ app.use("/files", fileRouter);
 
 app.use(tokenGuard());
 
-app.use("/item", itemRouter);
+app.use("/event", eventRouter);
 
 // Protected Get
 app.get("/some-protected-resource", (req: Request, res: Response, next) => {

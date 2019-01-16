@@ -1,26 +1,26 @@
 import * as Sequelize from "sequelize";
 import { sequelize } from "../instances/sequelize";
-import { Item } from "./item.model";
+import { Event } from "./event.model";
 import { Tag } from "./tag.model";
 
-export interface TaggedItemAddModel {
+export interface TaggedEventAddModel {
   tagId: number;
-  itemId: number;
+  eventId: number;
 }
 
-export interface TaggedItemModel extends Sequelize.Model<TaggedItemViewModel, TaggedItemAddModel> {
+export interface TaggedEventModel extends Sequelize.Model<TaggedEventViewModel, TaggedEventAddModel> {
   id: number;
   tagId: number;
-  itemId: number;
+  eventId: number;
 }
 
-export interface TaggedItemViewModel {
+export interface TaggedEventViewModel {
   id: number;
   tagId: number;
-  itemId: number;
+  eventId: number;
 }
 
-export const TaggedItem = sequelize.define<TaggedItemViewModel, TaggedItemAddModel>("taggedItem", {
+export const TaggedEvent = sequelize.define<TaggedEventViewModel, TaggedEventAddModel>("taggedEvent", {
   id: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
@@ -34,14 +34,14 @@ export const TaggedItem = sequelize.define<TaggedItemViewModel, TaggedItemAddMod
       deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE,
     },
   },
-  itemId: {
+  eventId: {
     type: Sequelize.INTEGER,
     references: {
-      model: Item,
+      model: Event,
       key: "id",
       deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE,
     },
   },
 });
 
-TaggedItem.sync();
+TaggedEvent.sync();

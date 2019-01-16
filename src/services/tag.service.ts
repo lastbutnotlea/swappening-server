@@ -1,6 +1,6 @@
 import { Sequelize } from "sequelize";
 import { Tag, TagAddModel } from "../models/tag.model";
-import { TaggedItem, TaggedItemViewModel } from "../models/taggedItem.model";
+import { TaggedEvent, TaggedEventViewModel } from "../models/taggedEvent.model";
 import * as Bluebird from "bluebird";
 
 export class TagService {
@@ -18,7 +18,7 @@ export class TagService {
   public async getTagByTagName(tagName: string) {
     const tag = await Tag.findOne({ where: { tagName },
     attributes: TagService.tagAttributes,
-  }) as Bluebird<TaggedItemViewModel>;
+  }) as Bluebird<TaggedEventViewModel>;
     if (tag == null) {
       return await this.addTag(tagName);
     } else {
@@ -30,7 +30,7 @@ export class TagService {
     return Tag.findOne({
       where: { id },
       attributes: TagService.tagAttributes,
-    }) as Bluebird<TaggedItemViewModel>;
+    }) as Bluebird<TaggedEventViewModel>;
   }
 
   private addTag(tagName: string) {
