@@ -10,6 +10,7 @@ import { UserService } from "../services/user.service";
 import { TaggedEventService } from "../services/taggedEvent.service";
 import { TagService } from "../services/tag.service";
 import { TaggedEventAddModel, TaggedEventModel } from "../models/taggedEvent.model";
+import { AuthorizationService } from "../services/authorization.service";
 
 export const eventRouter = Router();
 const eventService = new EventService();
@@ -60,8 +61,10 @@ eventRouter.post("/", eventRules.eventAdd, async (req, res) => {
  * Returns all event data.
  * Pictures have to be loaded manually later
  */
-eventRouter.get("/:id", (req, res) => {
-  // TODO Verify id
+eventRouter.get("/:id", async (req, res) => {
+  if (await AuthorizationService.isOwnerEventIdSameAsUserId(eventService, req)) {
+    return res.status(401).json("Unauthorized");
+  }
   const event = eventService.getEventById(req.params.id);
   return event.then((u) => res.json(u));
 });
@@ -69,8 +72,11 @@ eventRouter.get("/:id", (req, res) => {
 /**
  * Route for deleting an events
  */
-eventRouter.delete("/:id", (req, res) => {
-  // TODO Protect against other users
+eventRouter.delete("/:id", async (req, res) => {
+  if (await AuthorizationService.isOwnerEventIdSameAsUserId(eventService, req)) {
+    return res.status(401).json("Unauthorized");
+  }
+
   eventService.deleteEvent(req.params.id);
   return res.status(200).json("success");
 });
@@ -88,8 +94,8 @@ eventRouter.put("/:id", (req, res) => {
     description: req.body.description,
     ownerId: req.body.ownerId,
     place: req.body.place,
-    timeStart: req.body.timeStart,
-    timeEnd: req.body.timeEnd,
+    startTime: req.body.startTime,
+    endTime: req.body.endTime,
     isPrivate: req.body.isPrivate,
     hasChat: req.body.hasChat,
     isVisible: req.body.isVisible,

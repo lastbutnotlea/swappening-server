@@ -128,6 +128,21 @@ export class EventService {
     }) as Bluebird<EventViewModel>;
   }
 
+
+  /**
+   * Returns the id of the event for the a given id
+   * @param id
+   */
+  public async getOwnerIdById(id: number) {
+    Event.hasMany(Picture, { foreignKey: "eventId" });
+    Picture.belongsTo(Event, { foreignKey: "eventId" });
+
+    const eventOwnerId = await (Event.findByPk(id, {
+      attributes: ["ownerId"],
+    }) as Bluebird<{ownerId: number}>);
+    return eventOwnerId.ownerId;
+  }
+
   /**
    * Gets a numer of events for a given user to watch next
    * // TODO this is just returning random events right now
