@@ -11,7 +11,7 @@ const userService = new UserService();
 
 // setup
 const UPLOAD_PATH = "uploads";
-const upload = multer({
+  const upload = multer({
   dest: `${UPLOAD_PATH}/`,
   /*
   fileFilter: function (req, file, cb) {

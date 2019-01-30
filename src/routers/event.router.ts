@@ -41,16 +41,13 @@ eventRouter.post("/", eventRules.eventAdd, async (req, res) => {
   if (tagArray !== null) {
     for (const tagElement of tagArray) {
       const tag = await tagService.getTagByTagName(tagElement);
-      const tagToEvent: TaggedEventAddModel = {
-        tagId: tag.id,
-        eventId: event.id,
-      };
-      await taggedEventService.addTagToEvent(tagToEvent);
-      /*if ( tagId !== -1 ) {
-        const taggedEvent = { tagId, eventId: event.id };
-        taggedEventService.addTagToEvent(taggedEvent);
+      if (tag !== null) {
+        const tagToEvent: TaggedEventAddModel = {
+          tagId: tag.id,
+          eventId: event.id,
+        };
+        await taggedEventService.addTagToEvent(tagToEvent);
       }
-      */
     }
   }
 

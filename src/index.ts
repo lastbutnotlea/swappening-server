@@ -6,6 +6,7 @@ import { userRouter } from "./routers/user.router";
 import { tokenGuard } from "./middlewares/token-guard";
 import { fileRouter } from "./routers/fileHandling.router";
 import { eventRouter } from "./routers/event.router";
+import { tagRouter } from "./routers/tag.router";
 
 // app
 const app = express();
@@ -29,6 +30,8 @@ app.use("/files", fileRouter);
 app.use(tokenGuard());
 
 app.use("/event", eventRouter);
+
+app.use("/tag", tagRouter);
 
 // Protected Get
 app.get("/some-protected-resource", (req: Request, res: Response, next) => {

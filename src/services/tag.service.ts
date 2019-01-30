@@ -15,15 +15,20 @@ export class TagService {
    * Returns the tag id if exists otherwise -1
    * @param tagName
    */
-  public async getTagByTagName(tagName: string) {
-    const tag = await Tag.findOne({ where: { tagName },
-    attributes: TagService.tagAttributes,
+  public async getTagByTagName(tagName: string | null) {
+    const tag = await Tag.findOne({
+      where: { tagName },
+      attributes: TagService.tagAttributes,
   }) as Bluebird<TaggedEventViewModel>;
-    if (tag == null) {
-      return await this.addTag(tagName);
-    } else {
-      return tag;
-    }
+    return tag;
+  }
+
+
+  public async getAllTags() {
+    const tags = await Tag.findAll({
+      attributes: ["tagName"],
+    });
+    return tags;
   }
 
   public getTagById(id: number) {
