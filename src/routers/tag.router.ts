@@ -9,6 +9,6 @@ const tagService = new TagService();
  * Pictures have to be loaded manually later
  */
 tagRouter.get("/", (req, res) => {
-  const tags = tagService.getAllTags();
+  const tags = tagService.getAllTagNames();
   return tags.then((u) => res.json(u));
 });

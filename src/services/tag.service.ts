@@ -1,6 +1,6 @@
 import { Sequelize } from "sequelize";
-import { Tag, TagAddModel } from "../models/tag.model";
-import { TaggedEvent, TaggedEventViewModel } from "../models/taggedEvent.model";
+import { Tag } from "../models/tag.model";
+import { TaggedEventViewModel } from "../models/taggedEvent.model";
 import * as Bluebird from "bluebird";
 
 export class TagService {
@@ -16,19 +16,19 @@ export class TagService {
    * @param tagName
    */
   public async getTagByTagName(tagName: string | null) {
-    const tag = await Tag.findOne({
+    const tagObject = await Tag.findOne({
       where: { tagName },
       attributes: TagService.tagAttributes,
   }) as Bluebird<TaggedEventViewModel>;
-    return tag;
+    return tagObject;
   }
 
 
-  public async getAllTags() {
+  public async getAllTagNames() {
     const tags = await Tag.findAll({
       attributes: ["tagName"],
     });
-    return tags;
+    return tags.map((tag) => tag.tagName);
   }
 
   public getTagById(id: number) {
