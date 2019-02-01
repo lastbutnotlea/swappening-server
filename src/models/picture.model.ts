@@ -36,7 +36,7 @@ export const Picture = sequelize.define<PictureViewModel, PictureAddModel>("pict
     },
   },
   originalName: {
-    type: Sequelize.STRING(32),
+    type: Sequelize.STRING(64),
   },
   order: {
     type: Sequelize.INTEGER,
