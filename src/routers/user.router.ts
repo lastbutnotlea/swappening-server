@@ -46,6 +46,13 @@ userRouter.post("/login", userRules.forLogin, (req, res) => {
   return token.then((t) => res.json(t));
 });
 
+userRouter.get("/user/me", (req, res) => {
+  const userId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
+  return UserService.getFullUserData(userId).then((u) => {
+    res.json(u);
+  });
+});
+
 userRouter.get("/user/:userId", (req, res) => {
   const userId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
   if (userId == req.params.userId) {
@@ -59,6 +66,7 @@ userRouter.get("/user/:userId", (req, res) => {
   }
 
 });
+
 
 userRouter.put("/user/:userId", (req, res) => {
   const userId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
