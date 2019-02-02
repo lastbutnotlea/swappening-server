@@ -4,6 +4,8 @@ import * as Bluebird from "bluebird";
 import { User, UserModel, UserAddModel, UserViewModel } from "../models/user.model";
 import { Event, EventModel } from "../models/event.model";
 import { Sequelize } from "sequelize";
+import { RightSwipe } from "../models/rightSwipe.model";
+import { LeftSwipe } from "../models/leftSwipe.model";
 
 export class UserService {
 
@@ -12,6 +14,10 @@ export class UserService {
 
   static get userAttributes() {
     return ["nickname", "description", "pictureStorageName"];
+  }
+
+  static get fullUserAttributes() {
+    return ["id", "email", "nickname", "description", "location", "distance", "pictureStorageName"];
   }
 
   /**
@@ -35,6 +41,32 @@ export class UserService {
   public static getUserById(id: number) {
     return User.findByPk(id, {
       attributes: UserService.userAttributes,
+    }) as Bluebird<UserViewModel>;
+  }
+
+
+  /**
+   * Returns user data for a given id
+   * @param id
+   */
+  public static getFullUserData(id: number) {
+    return User.findByPk(id, {
+      attributes: UserService.fullUserAttributes,
+    }) as Bluebird<UserViewModel>;
+  }
+
+  public static getUserByEventId(eventId: number) {
+    User.hasMany(RightSwipe, { foreignKey: "userId" });
+    RightSwipe.belongsTo(User, { foreignKey: "userId" });
+
+    return User.findAll({
+      attributes: ["id", "nickname", "description", "pictureStorageName"],
+      include: {
+        model: RightSwipe,
+        where: {
+          eventId,
+        },
+      },
     }) as Bluebird<UserViewModel>;
   }
 

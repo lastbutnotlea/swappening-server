@@ -11,7 +11,7 @@ const userService = new UserService();
 
 // setup
 const UPLOAD_PATH = "uploads";
-  const upload = multer({
+const upload = multer({
   dest: `${UPLOAD_PATH}/`,
   /*
   fileFilter: function (req, file, cb) {
@@ -47,14 +47,22 @@ userRouter.post("/login", userRules.forLogin, (req, res) => {
 });
 
 userRouter.get("/user/:userId", (req, res) => {
-  return UserService.getUserById(req.params.userId).then((u) => {
-    res.json(u);
-  });
+  const userId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
+  if (userId == req.params.userId) {
+    return UserService.getFullUserData(userId).then((u) => {
+      res.json(u);
+    });
+  } else {
+    return UserService.getUserById(req.params.userId).then((u) => {
+      res.json(u);
+    });
+  }
+
 });
 
 userRouter.put("/user/:userId", (req, res) => {
   const userId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
-  if(userId == req.params.userId){
+  if (userId == req.params.userId) {
     return userService.updateUser(
       {
         id: req.params.userId,
@@ -75,5 +83,11 @@ userRouter.put("/user/:userId", (req, res) => {
     return res.status(403).json("Forbidden");
   }
 
+});
+
+userRouter.get("/user/forEvent/:eventId", (req, res) => {
+  return UserService.getUserByEventId(req.params.eventId).then((u) => {
+    res.json(u);
+  });
 });
 
