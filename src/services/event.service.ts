@@ -1,8 +1,11 @@
 import * as Bluebird from "bluebird";
 import { Event, EventAddModel, EventModel, EventViewModel } from "../models/event.model";
 import { Picture, PictureAddModel, PictureViewModel } from "../models/picture.model";
+import { LeftSwipe, LeftSwipeModel } from "../models/leftSwipe.model";
 import { Sequelize } from "sequelize";
 import * as fs from "fs";
+import { sequelize } from "../instances/sequelize";
+import { RightSwipe, RightSwipeModel } from "../models/rightSwipe.model";
 
 
 export class EventService {
@@ -139,7 +142,7 @@ export class EventService {
 
     const eventOwnerId = await (Event.findByPk(id, {
       attributes: ["ownerId"],
-    }) as Bluebird<{ownerId: number}>);
+    }) as Bluebird<{ ownerId: number }>);
     return eventOwnerId.ownerId;
   }
 
@@ -152,14 +155,41 @@ export class EventService {
   public getEventsForUser(userId: number, number: number) {
     Event.hasMany(Picture, { foreignKey: "eventId" });
     Picture.belongsTo(Event, { foreignKey: "eventId" });
+    Event.hasMany(LeftSwipe, { foreignKey: "eventId" });
+    LeftSwipe.belongsTo(Event, { foreignKey: "eventId" });
+    Event.hasMany(RightSwipe, { foreignKey: "eventId" });
+    RightSwipe.belongsTo(Event, { foreignKey: "eventId" });
 
     return Event.findAll({
+      include: [
+        {
+          model: Picture,
+        },
+        {
+          model: LeftSwipe,
+          attributes: ["userId"],
+          where: {
+            userId,
+          },
+          required: false,
+        },
+        {
+          model: RightSwipe,
+          attributes: ["userId"],
+          where: {
+            userId,
+          },
+          required: false,
+        },
+      ],
+      where: {
+        "$leftSwipes.userId$": null,
+        "$rightSwipes.userId$": null,
+      },
       order: [
         [Sequelize.literal("RANDOM()")],
         [Picture, "order", "asc"],
       ], attributes: EventService.eventAttributes,
-      limit: number,
-      include: [Picture],
     }) as Bluebird<EventViewModel>;
   }
 
@@ -179,6 +209,66 @@ export class EventService {
         [Picture, "order", "asc"],
       ],
     }) as Bluebird<EventViewModel>;
+  }
+
+  /**
+   * Gets all liked events of a given user
+   * @param userId
+   */
+  public getLikedEventsOfUser(userId: number) {
+    Event.hasMany(Picture, { foreignKey: "eventId" });
+    Picture.belongsTo(Event, { foreignKey: "eventId" });
+    Event.hasMany(RightSwipe, { foreignKey: "eventId" });
+    RightSwipe.belongsTo(Event, { foreignKey: "eventId" });
+
+    return Event.findAll({
+      where: { ownerId: userId },
+      attributes: EventService.eventAttributes,
+      include: [Picture, {
+        model: RightSwipe,
+        where: {userId},
+      }],
+      order: [
+        [Picture, "order", "asc"],
+      ],
+    }) as Bluebird<EventViewModel>;
+  }
+
+  /**
+   * Gets all liked events of a given user
+   * @param userId
+   */
+  public getAcceptedEventsOfUser(userId: number) {
+    Event.hasMany(Picture, { foreignKey: "eventId" });
+    Picture.belongsTo(Event, { foreignKey: "eventId" });
+    Event.hasMany(RightSwipe, { foreignKey: "eventId" });
+    RightSwipe.belongsTo(Event, { foreignKey: "eventId" });
+
+    return Event.findAll({
+      where: { ownerId: userId },
+      attributes: EventService.eventAttributes,
+      include: [Picture, {
+        model: RightSwipe,
+        where: {userId, accepted: true},
+      }],
+      order: [
+        [Picture, "order", "asc"],
+      ],
+    }) as Bluebird<EventViewModel>;
+  }
+
+  public swipeEvent(eventId: number, userId: number, isLeftSwipe: boolean) {
+    if (isLeftSwipe) {
+      return LeftSwipe.create({ eventId, userId }) as Bluebird<LeftSwipeModel>;
+    } else {
+      return Event.findOne({
+        where: {id: eventId},
+        attributes: ["isPrivate"],
+      }).then((res) => {
+        return RightSwipe.create({ eventId, userId, accepted: !res.dataValues.isPrivate}) as Bluebird<RightSwipeModel>;
+      });
+
+    }
   }
 
   /**

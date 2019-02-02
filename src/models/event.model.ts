@@ -1,6 +1,8 @@
 import * as Sequelize from "sequelize";
 import { sequelize } from "../instances/sequelize";
 import { User } from "./user.model";
+import { LeftSwipe } from "./leftSwipe.model";
+import { RightSwipe } from "./rightSwipe.model";
 
 export interface EventAddModel {
   headline: string;
@@ -74,6 +76,15 @@ export const Event = sequelize.define<EventViewModel, EventAddModel>("event", {
     type: Sequelize.BOOLEAN,
     defaultValue: true,
     allowNull: false,
+  },
+}, {
+  classMethods: {
+    associate() {
+      Event.hasMany(User, { through: LeftSwipe });
+      Event.hasMany(LeftSwipe);
+      Event.hasMany(User, { through: RightSwipe });
+      Event.hasMany(RightSwipe);
+    },
   },
 });
 

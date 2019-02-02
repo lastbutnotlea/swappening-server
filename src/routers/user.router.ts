@@ -45,3 +45,35 @@ userRouter.post("/login", userRules.forLogin, (req, res) => {
 
   return token.then((t) => res.json(t));
 });
+
+userRouter.get("/user/:userId", (req, res) => {
+  return UserService.getUserById(req.params.userId).then((u) => {
+    res.json(u);
+  });
+});
+
+userRouter.put("/user/:userId", (req, res) => {
+  const userId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
+  if(userId == req.params.userId){
+    return userService.updateUser(
+      {
+        id: req.params.userId,
+        createdAt: "",
+        description: req.body.description,
+        distance: req.body.distance,
+        email: "",
+        location: req.body.location,
+        nickname: req.body.nickname,
+        password: req.body.password,
+        pictureStorageName: req.body.pictureStorageName,
+        updatedAt: "",
+
+      }).then((u) => {
+      res.json(u);
+    });
+  } else {
+    return res.status(403).json("Forbidden");
+  }
+
+});
+

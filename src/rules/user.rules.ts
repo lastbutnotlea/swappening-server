@@ -14,6 +14,13 @@ export const userRules = {
     check("confirmPassword")
       .custom((confirmPassword, { req }) => req.body.password === confirmPassword)
       .withMessage("Passwords are different"),
+    check("description")
+      .exists({ checkFalsy: true }).withMessage("The description must not be empty"),
+    check("location")
+      .exists({ checkFalsy: true }).withMessage("The location must not be empty"),
+    check("distance")
+      .exists({ checkFalsy: true }).withMessage("The distance must not be empty"),
+
   ],
   forLogin: [
     check("email")

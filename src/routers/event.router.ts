@@ -124,6 +124,47 @@ eventRouter.get("/ofUser/:userId", (req, res) => {
 });
 
 /**
+ * Returns all liked events of a certain user.
+ * Pictures have to be loaded manually later
+ */
+eventRouter.get("/forUser/liked", (req, res) => {
+  const userId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
+  const event = eventService.getLikedEventsOfUser(userId);
+  return event.then((u) => res.json(u));
+});
+
+/**
+ * Returns all events of a certain user where he has been accepted.
+ * Pictures have to be loaded manually later
+ */
+eventRouter.get("/forUser/accepted", (req, res) => {
+  const userId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
+  const event = eventService.getAcceptedEventsOfUser(userId);
+  return event.then((u) => res.json(u));
+});
+
+/**
+ * Endpoint for swiping items left or right
+ */
+eventRouter.post("/swipe/:direction/:eventId", (req, res) => {
+  const userId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
+  let isLeft: boolean;
+  if (req.params.direction === "left") {
+    isLeft = true;
+  } else if (req.params.direction === "right") {
+    isLeft = false;
+  } else {
+    return res.status(400).json("Not a left or right swipe");
+  }
+  const response = eventService.swipeEvent(req.params.eventId, userId, isLeft);
+  return response.then((m) => {
+    return res.status(200).json(m);
+  }).catch(function (err) {
+    return res.status(422).send(err.errors);
+  });
+});
+
+/**
  *  This is a endpoint for uploading form-data which contains the image and the eventId for the image
  */
 eventRouter.post("/image", upload.single("data"), (req, res) => {
