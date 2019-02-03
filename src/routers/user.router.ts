@@ -46,6 +46,13 @@ userRouter.post("/login", userRules.forLogin, (req, res) => {
   return token.then((t) => res.json(t));
 });
 
+userRouter.get("/user/me", (req, res) => {
+  const userId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
+  return UserService.getFullUserData(userId).then((u) => {
+    res.json(u);
+  });
+});
+
 userRouter.get("/user/:userId", (req, res) => {
   const userId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
   if (userId == req.params.userId) {
@@ -60,8 +67,13 @@ userRouter.get("/user/:userId", (req, res) => {
 
 });
 
-userRouter.put("/user/:userId", (req, res) => {
+
+userRouter.put("/user/:userId", upload.single("data"), (req, res) => {
   const userId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
+  let filename = null;
+  if ("file" in req){
+    filename = req.file.filename;
+  }
   if (userId == req.params.userId) {
     return userService.updateUser(
       {
@@ -73,7 +85,7 @@ userRouter.put("/user/:userId", (req, res) => {
         location: req.body.location,
         nickname: req.body.nickname,
         password: req.body.password,
-        pictureStorageName: req.body.pictureStorageName,
+        pictureStorageName: filename,
         updatedAt: "",
 
       }).then((u) => {

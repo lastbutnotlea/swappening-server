@@ -308,7 +308,6 @@ export class EventService {
       order: [
         ["order", "asc"],
       ],
-      attributes: EventService.pictureAttributes,
     }) as Array<Bluebird<PictureViewModel>>;
   }
 
