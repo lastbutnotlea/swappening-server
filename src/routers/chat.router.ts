@@ -8,7 +8,7 @@ import { ChatUserEventAddModel } from "../models/chatUserEvent.model";
 import { Socket } from "socket.io";
 
 export const chatRouter = Router();
-export const io = require("socket.io")(80085);
+export const io = require("socket.io")(8085);
 
 const chatService = new ChatService();
 
