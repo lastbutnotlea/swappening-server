@@ -19,16 +19,13 @@ export class TagService {
     const tagObject = await Tag.findOne({
       where: { tagName },
       attributes: TagService.tagAttributes,
-  }) as Bluebird<TaggedEventViewModel>;
+    }) as Bluebird<TaggedEventViewModel>;
     return tagObject;
   }
 
 
-  public async getAllTagNames() {
-    const tags = await Tag.findAll({
-      attributes: ["tagName"],
-    });
-    return tags.map((tag) => tag.tagName);
+  public getAllTagNames() {
+    return Tag.findAll({});
   }
 
   public getTagById(id: number) {
@@ -39,7 +36,7 @@ export class TagService {
   }
 
   private addTag(tagName: string) {
-    return Tag.create({tagName})
+    return Tag.create({ tagName })
       .then((t) => this.getTagById(t.id));
   }
 

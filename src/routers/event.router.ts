@@ -118,7 +118,7 @@ eventRouter.put("/:id", (req, res) => {
  */
 eventRouter.get("/forUser/:userId/:number", (req, res) => {
   // TODO Verify id
-  const event = eventService.getEventsForUser(req.params.userId, req.params.number);
+  const event = eventService.getEventsForUser(req.params.userId, req.params.number, req.body.tagFilter, req.body.stringFilter);
   return event.then((u) => res.json(u));
 });
 
