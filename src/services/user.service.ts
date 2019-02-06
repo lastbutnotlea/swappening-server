@@ -117,7 +117,7 @@ export class UserService {
         where: { id },
       }));
     }
-    return Promise.all(promises).then(() => UserService.getUserById(id));
+    return Promise.all(promises).then(() => UserService.getFullUserData(id));
   }
 
 
