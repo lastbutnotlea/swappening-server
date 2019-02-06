@@ -24,7 +24,7 @@ export class ChatService {
   public getMessages(chatId) {
     return MessageUserEvent.findAll({
       where: {chatId},
-      attributes: ["messageOfUser", "message", "createdAt"],
+      attributes: ["isMessageOfOwner", "message", "createdAt"],
       order: ["createdAt"],
     }) as Bluebird<MessageUserEventViewModel>;
   }

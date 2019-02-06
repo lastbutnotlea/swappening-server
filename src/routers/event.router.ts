@@ -34,6 +34,10 @@ eventRouter.post("/", eventRules.eventAdd, async (req, res) => {
   const ownerId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
 
   const payloadEvent = matchedData(req) as EventAddModel;
+  // ToDo: remove this for production
+  if (payloadEvent.startTime.toString() === "") {
+    payloadEvent.startTime = new Date(Date.now());
+  }
   const event = await eventService.addEvent(payloadEvent, ownerId);
 
   const tagArray = req.body.tags;

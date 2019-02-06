@@ -4,21 +4,21 @@ import { ChatUserEvent, ChatUserEventAddModel } from "./chatUserEvent.model";
 
 export interface MessageUserEventAddModel {
   chatId: number;
-  isMessageOfUser: boolean;
+  isMessageOfOwner: boolean;
   message: string;
 }
 
 export interface MessageUserEventModel extends Sequelize.Model<MessageUserEventViewModel, MessageUserEventAddModel> {
   id: number;
   chatId: number;
-  isMessageOfUser: boolean;
+  isMessageOfOwner: boolean;
   message: string;
   createdAt: string;
 }
 
 export interface MessageUserEventViewModel {
   chatId: number;
-  isMessageOfUser: boolean;
+  isMessageOfOwner: boolean;
   message: string;
   createdAt: string;
 }
@@ -37,7 +37,7 @@ export const MessageUserEvent = sequelize.define<MessageUserEventModel, MessageU
       deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE,
     },
   },
-  isMessageOfUser: Sequelize.BOOLEAN,
+  isMessageOfOwner: Sequelize.BOOLEAN,
   message: Sequelize.STRING,
 });
 

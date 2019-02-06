@@ -64,11 +64,13 @@ io.on("connection", (socket) => {
     const userId: number = UserService.getUserFromToken(token);
     console.log("a user with " + userId + " is connected");
     socketsOfUser.set(userId, socket);
-    socket.on("message", (chatId, chatPartnerId, isMessageOfUser, message) => {
-      if (socketsOfUser.has(chatPartnerId)) {
-        socketsOfUser.get(chatPartnerId).emit("message", message);
+    socket.on("message", (chatId, chatPartnerId, isMessageOfOwner, message) => {
+      console.log("before routing message");
+      if (socketsOfUser.has(+chatPartnerId)) {
+        console.log("socket found");
+        socketsOfUser.get(+chatPartnerId).emit("message", message);
       }
-      chatService.addMessage({ chatId, isMessageOfUser, message });
+      chatService.addMessage({ chatId, isMessageOfOwner: isMessageOfOwner, message });
     });
   });
 
