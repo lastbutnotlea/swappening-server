@@ -6,6 +6,7 @@ import { Sequelize } from "sequelize";
 import * as fs from "fs";
 import { sequelize } from "../instances/sequelize";
 import { RightSwipe, RightSwipeModel } from "../models/rightSwipe.model";
+import { TaggedEvent } from "../models/taggedEvent.model";
 
 
 export class EventService {
@@ -143,7 +144,7 @@ export class EventService {
     const eventOwnerId = await (Event.findByPk(id, {
       attributes: ["ownerId"],
     }) as Bluebird<{ ownerId: number }>);
-    if(eventOwnerId !== null){
+    if (eventOwnerId !== null) {
       return eventOwnerId.ownerId;
     } else {
       return null;
@@ -155,14 +156,18 @@ export class EventService {
    * // TODO this is just returning random events right now
    * @param userId
    * @param number
+   * @param tagFilter
+   * @param stringFilter
    */
-  public getEventsForUser(userId: number, number: number) {
+  public getEventsForUser(userId: number, number: number, tagFilter: string[], stringFilter: string) {
     Event.hasMany(Picture, { foreignKey: "eventId" });
     Picture.belongsTo(Event, { foreignKey: "eventId" });
     Event.hasMany(LeftSwipe, { foreignKey: "eventId" });
     LeftSwipe.belongsTo(Event, { foreignKey: "eventId" });
     Event.hasMany(RightSwipe, { foreignKey: "eventId" });
     RightSwipe.belongsTo(Event, { foreignKey: "eventId" });
+    Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
+    TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
 
     return Event.findAll({
       include: [
@@ -185,13 +190,25 @@ export class EventService {
           },
           required: false,
         },
+        {
+          model: TaggedEvent,
+          attributes: ["tagId"],
+          required: false,
+
+        },
       ],
       where: {
         "$leftSwipes.userId$": null,
         "$rightSwipes.userId$": null,
+        ...(tagFilter != null && { "$taggedEvents.tagId$": tagFilter }),
+
+        ...(stringFilter != null && {
+          headline: sequelize.where(
+            sequelize.fn("LOWER", sequelize.col("headline")), "LIKE", "%" + stringFilter.toLowerCase() + "%"),
+        }),
       },
       order: [
-        [Sequelize.literal("RANDOM()")],
+        ["createdAt", "desc"],
         [Picture, "order", "asc"],
       ], attributes: EventService.eventAttributes,
     }) as Bluebird<EventViewModel>;
