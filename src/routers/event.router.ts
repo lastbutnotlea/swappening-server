@@ -70,8 +70,13 @@ eventRouter.get("/:id", async (req, res) => {
  * Route for deleting an events
  */
 eventRouter.delete("/:id", async (req, res) => {
+  let event = await eventService.getEventById(req.params.id);
+  if(event == null){
+    return res.status(404).json("No Event with ID " + req.params.id + " found!");
+  }
+
   if (await AuthorizationService.isOwnerEventIdSameAsUserId(eventService, req)) {
-    return res.status(401).json("Unauthorized");
+    return res.status(401).json("Not authorized to delete event!");
   }
 
   eventService.deleteEvent(req.params.id);
@@ -159,10 +164,35 @@ eventRouter.post("/swipe/:direction/:eventId", (req, res) => {
   const response = eventService.swipeEvent(req.params.eventId, userId, isLeft);
   return response.then((m) => {
     return res.status(200).json(m);
-  }).catch(function (err) {
+  }).catch(function(err) {
     return res.status(422).send(err.errors);
   });
 });
+
+/**
+ * Endpoint for accepting or declining users
+ */
+eventRouter.post("/swipeUser/:direction/:userId/:id", async (req, res) => {
+  if (await AuthorizationService.isOwnerEventIdSameAsUserId(eventService, req)) {
+    return res.status(401).json("Unauthorized");
+  }
+
+  let isLeft: boolean;
+  if (req.params.direction === "left") {
+    isLeft = true;
+  } else if (req.params.direction === "right") {
+    isLeft = false;
+  } else {
+    return res.status(400).json("Not a left or right swipe");
+  }
+  const response = eventService.swipeUser(req.params.id, req.params.userId, isLeft);
+  return response.then((m) => {
+    return res.status(200).json(m);
+  }).catch(function(err) {
+    return res.status(422).send(err.errors);
+  });
+});
+
 
 /**
  *  This is a endpoint for uploading form-data which contains the image and the eventId for the image
@@ -184,8 +214,7 @@ eventRouter.post("/image", upload.single("data"), (req, res) => {
  */
 eventRouter.delete("/image/:storageName", (req, res) => {
   // TODO Protect
-  eventService.deletePicture(req.params.storageName);
-  return res.status(200).json("success");
+  res.json(eventService.deletePicture(req.params.storageName));
 });
 
 eventRouter.put("/image/updateOrder/:eventId", (req, res) => {

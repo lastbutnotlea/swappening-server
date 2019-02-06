@@ -143,7 +143,11 @@ export class EventService {
     const eventOwnerId = await (Event.findByPk(id, {
       attributes: ["ownerId"],
     }) as Bluebird<{ ownerId: number }>);
-    return eventOwnerId.ownerId;
+    if(eventOwnerId !== null){
+      return eventOwnerId.ownerId;
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -226,7 +230,7 @@ export class EventService {
       attributes: EventService.eventAttributes,
       include: [Picture, {
         model: RightSwipe,
-        where: {userId},
+        where: { userId },
       }],
       order: [
         [Picture, "order", "asc"],
@@ -249,7 +253,7 @@ export class EventService {
       attributes: EventService.eventAttributes,
       include: [Picture, {
         model: RightSwipe,
-        where: {userId, accepted: true},
+        where: { userId, accepted: true },
       }],
       order: [
         [Picture, "order", "asc"],
@@ -262,12 +266,30 @@ export class EventService {
       return LeftSwipe.create({ eventId, userId }) as Bluebird<LeftSwipeModel>;
     } else {
       return Event.findOne({
-        where: {id: eventId},
+        where: { id: eventId },
         attributes: ["isPrivate"],
       }).then((res) => {
-        return RightSwipe.create({ eventId, userId, accepted: !res.dataValues.isPrivate}) as Bluebird<RightSwipeModel>;
+        return RightSwipe.create({ eventId, userId, accepted: !res.dataValues.isPrivate }) as Bluebird<RightSwipeModel>;
       });
 
+    }
+  }
+
+  public swipeUser(eventId: number, userId: number, isLeftSwipe: boolean) {
+    if (isLeftSwipe) {
+      return RightSwipe.destroy({
+        where: {
+          userId, eventId,
+        },
+      }).then(() => {
+        return LeftSwipe.create({ eventId, userId }) as Bluebird<LeftSwipeModel>;
+      });
+    } else {
+      return RightSwipe.update({
+        accepted: true,
+      }, {
+        where: { userId, eventId },
+      });
     }
   }
 
@@ -295,7 +317,9 @@ export class EventService {
       fs.unlink("uploads/" + pictureStorageName, (res) => {
         return res;
       }),
-    );
+    ).catch((e) => {
+      return e;
+    });
   }
 
   /**
