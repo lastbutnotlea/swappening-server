@@ -188,6 +188,9 @@ export class EventService {
     RightSwipe.belongsTo(Event, { foreignKey: "eventId" });
     Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
     TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
+    Tag.hasMany(TaggedEvent, { foreignKey: "tagId" });
+    TaggedEvent.belongsTo(Tag, { foreignKey: "tagId" });
+
 
     return Event.findAll({
       include: [
@@ -247,6 +250,8 @@ export class EventService {
     Picture.belongsTo(Event, { foreignKey: "eventId" });
     Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
     TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
+    Tag.hasMany(TaggedEvent, { foreignKey: "tagId" });
+    TaggedEvent.belongsTo(Tag, { foreignKey: "tagId" });
 
     return Event.findAll({
       where: { ownerId: userId },
@@ -278,6 +283,8 @@ export class EventService {
     RightSwipe.belongsTo(Event, { foreignKey: "eventId" });
     Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
     TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
+    Tag.hasMany(TaggedEvent, { foreignKey: "tagId" });
+    TaggedEvent.belongsTo(Tag, { foreignKey: "tagId" });
 
     return Event.findAll({
       where: { ownerId: userId },
@@ -312,6 +319,8 @@ export class EventService {
     RightSwipe.belongsTo(Event, { foreignKey: "eventId" });
     Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
     TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
+    Tag.hasMany(TaggedEvent, { foreignKey: "tagId" });
+    TaggedEvent.belongsTo(Tag, { foreignKey: "tagId" });
 
     return Event.findAll({
       where: { ownerId: userId },
