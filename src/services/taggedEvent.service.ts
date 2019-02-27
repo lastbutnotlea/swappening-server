@@ -24,4 +24,10 @@ export class TaggedEventService {
       attributes: TaggedEventService.taggedEventAttributes,
     }) as Bluebird<TaggedEventViewModel>;
   }
+
+  public clearTagDataOfEvent(id: number){
+    return TaggedEvent.destroy({
+      where: {eventId: id},
+    });
+  }
 }

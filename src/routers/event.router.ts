@@ -38,7 +38,7 @@ eventRouter.post("/", eventRules.eventAdd, async (req, res) => {
   if (payloadEvent.startTime.toString() === "") {
     payloadEvent.startTime = new Date(Date.now());
   }
-  const event = await eventService.addEvent(payloadEvent, ownerId);
+  let event = await eventService.addEvent(payloadEvent, ownerId);
 
   const tagArray = req.body.tags;
 
@@ -55,6 +55,7 @@ eventRouter.post("/", eventRules.eventAdd, async (req, res) => {
     }
   }
 
+  event = await eventService.getEventById(event.id);
   return res.json(event);
 });
 
@@ -91,7 +92,7 @@ eventRouter.delete("/:id", async (req, res) => {
  * Returns all event data.
  * Pictures have to be loaded manually later
  */
-eventRouter.put("/:id", (req, res) => {
+eventRouter.put("/:id", async (req, res) => {
   // TODO Verify id
   // TODO Verify user id
   const newEvent: EventModel = {
@@ -108,8 +109,26 @@ eventRouter.put("/:id", (req, res) => {
     createdAt: "",
     updatedAt: "",
   };
-  const event = eventService.updateEvent(newEvent);
-  return event.then((u) => res.json(u));
+
+  const tagArray = req.body.taggedEvents;
+
+  if (tagArray !== null) {
+    await taggedEventService.clearTagDataOfEvent(req.params.id);
+    for (const tagElement of tagArray) {
+      const tag = await tagService.getTagByTagName(tagElement);
+      if (tag !== null) {
+        const tagToEvent: TaggedEventAddModel = {
+          tagId: tag.id,
+          eventId: req.params.id,
+        };
+        await taggedEventService.addTagToEvent(tagToEvent);
+      }
+    }
+  }
+
+  const event = await eventService.updateEvent(newEvent);
+
+  return res.json(event);
 });
 
 /**
