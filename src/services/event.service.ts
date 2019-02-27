@@ -7,6 +7,7 @@ import * as fs from "fs";
 import { sequelize } from "../instances/sequelize";
 import { RightSwipe, RightSwipeModel } from "../models/rightSwipe.model";
 import { TaggedEvent } from "../models/taggedEvent.model";
+import { Tag } from "../models/tag.model";
 
 
 export class EventService {
@@ -17,6 +18,10 @@ export class EventService {
 
   static get pictureAttributes() {
     return ["pictureStorageName", "eventId", "originalName"];
+  }
+
+  static get taggedEventAttributes() {
+    return ["tagId"];
   }
 
   /**
@@ -122,14 +127,29 @@ export class EventService {
   public getEventById(id: number) {
     Event.hasMany(Picture, { foreignKey: "eventId" });
     Picture.belongsTo(Event, { foreignKey: "eventId" });
+    Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
+    TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
+    Tag.hasMany(TaggedEvent, { foreignKey: "tagId" });
+    TaggedEvent.belongsTo(Tag, { foreignKey: "tagId" });
+
 
     return Event.findByPk(id, {
       attributes: EventService.eventAttributes,
-      include: [Picture],
+      include: [Picture,
+        {
+          model: TaggedEvent,
+          required: false,
+          attributes: EventService.taggedEventAttributes,
+          include:
+            {
+              model: Tag,
+              attributes: ["tagName"],
+            },
+        }],
       order: [
         [Picture, "order", "asc"],
       ],
-    }) as Bluebird<EventViewModel>;
+    });
   }
 
 
@@ -192,9 +212,13 @@ export class EventService {
         },
         {
           model: TaggedEvent,
-          attributes: ["tagId"],
           required: false,
-
+          attributes: EventService.taggedEventAttributes,
+          include:
+            {
+              model: Tag,
+              attributes: ["tagName"],
+            },
         },
       ],
       where: {
@@ -221,11 +245,22 @@ export class EventService {
   public getEventsOfUser(userId: number) {
     Event.hasMany(Picture, { foreignKey: "eventId" });
     Picture.belongsTo(Event, { foreignKey: "eventId" });
+    Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
+    TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
 
     return Event.findAll({
       where: { ownerId: userId },
       attributes: EventService.eventAttributes,
-      include: [Picture],
+      include: [Picture, {
+        model: TaggedEvent,
+        required: false,
+        attributes: EventService.taggedEventAttributes,
+        include:
+          {
+            model: Tag,
+            attributes: ["tagName"],
+          },
+      }],
       order: [
         [Picture, "order", "asc"],
       ],
@@ -241,11 +276,22 @@ export class EventService {
     Picture.belongsTo(Event, { foreignKey: "eventId" });
     Event.hasMany(RightSwipe, { foreignKey: "eventId" });
     RightSwipe.belongsTo(Event, { foreignKey: "eventId" });
+    Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
+    TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
 
     return Event.findAll({
       where: { ownerId: userId },
       attributes: EventService.eventAttributes,
       include: [Picture, {
+        model: TaggedEvent,
+        required: false,
+        attributes: EventService.taggedEventAttributes,
+        include:
+          {
+            model: Tag,
+            attributes: ["tagName"],
+          },
+      }, {
         model: RightSwipe,
         where: { userId },
       }],
@@ -264,11 +310,22 @@ export class EventService {
     Picture.belongsTo(Event, { foreignKey: "eventId" });
     Event.hasMany(RightSwipe, { foreignKey: "eventId" });
     RightSwipe.belongsTo(Event, { foreignKey: "eventId" });
+    Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
+    TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
 
     return Event.findAll({
       where: { ownerId: userId },
       attributes: EventService.eventAttributes,
       include: [Picture, {
+        model: TaggedEvent,
+        required: false,
+        attributes: EventService.taggedEventAttributes,
+        include:
+          {
+            model: Tag,
+            attributes: ["tagName"],
+          },
+      }, {
         model: RightSwipe,
         where: { userId, accepted: true },
       }],
