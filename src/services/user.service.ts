@@ -86,16 +86,16 @@ export class UserService {
         where: { id },
       }));
     }
-    if (password != null) {
-      promises.push(bcrypt.hash(password, UserService.saltRounds)
-        .then((hash) => {
-          User.update({
-            password: hash,
-          }, {
-            where: { id },
-          });
-        }));
-    }
+    // if (password != null) {
+    //   promises.push(bcrypt.hash(password, UserService.saltRounds)
+    //     .then((hash) => {
+    //       User.update({
+    //         password: hash,
+    //       }, {
+    //         where: { id },
+    //       });
+    //     }));
+    // }
     if (distance != null) {
       promises.push(User.update({
         distance,
