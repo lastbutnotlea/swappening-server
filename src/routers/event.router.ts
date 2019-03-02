@@ -151,12 +151,12 @@ eventRouter.get("/forUser/:userId/:number", async (req, res) => {
           else return "0";
         });
         const event = eventService.getEventsForUser(req.params.userId, req.params.number, tagFilterString, req.body.stringFilter);
-        return event.then((u) => res.json(u.slice(1, req.params.number)));
+        return event.then((u) => res.json(u.slice(1, +req.params.number + 1)));
       },
     );
   } else {
     const event = eventService.getEventsForUser(req.params.userId, req.params.number, null, req.body.stringFilter);
-    return event.then((u) => res.json(u.slice(1, req.params.number + 1)));
+    return event.then((u) => res.json(u.slice(1, +req.params.number + 1)));
   }
 
 
