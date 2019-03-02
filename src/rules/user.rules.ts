@@ -19,7 +19,8 @@ export const userRules = {
     check("location")
       .exists().withMessage("The location must not be empty"),
     check("distance")
-      .exists().withMessage("The distance must not be empty"),
+      .exists().withMessage("The distance must not be empty")
+      .isInt().withMessage("Distance must be a number"),
 
   ],
   forLogin: [
