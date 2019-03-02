@@ -2,13 +2,11 @@ import * as Bluebird from "bluebird";
 import { Event, EventAddModel, EventModel, EventViewModel } from "../models/event.model";
 import { Picture, PictureAddModel, PictureViewModel } from "../models/picture.model";
 import { LeftSwipe, LeftSwipeModel } from "../models/leftSwipe.model";
-import { Sequelize } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import * as fs from "fs";
-import { sequelize } from "../instances/sequelize";
 import { RightSwipe, RightSwipeModel } from "../models/rightSwipe.model";
 import { TaggedEvent } from "../models/taggedEvent.model";
 import { Tag } from "../models/tag.model";
-const Op = sequelize.Op;
 
 export class EventService {
 
@@ -157,7 +155,7 @@ export class EventService {
    * Returns the id of the event for the a given id
    * @param id
    */
-  public async getOwnerIdById(id: number) {
+  public static async getOwnerIdById(id: number) {
     Event.hasMany(Picture, { foreignKey: "eventId" });
     Picture.belongsTo(Event, { foreignKey: "eventId" });
 
@@ -235,8 +233,8 @@ export class EventService {
         ...(tagFilter != null && { "$taggedEvents.tagId$": tagFilter }),
 
         ...(stringFilter != null && {
-          headline: sequelize.where(
-            sequelize.fn("LOWER", sequelize.col("headline")), "LIKE", "%" + stringFilter.toLowerCase() + "%"),
+          headline: Sequelize.where(
+            Sequelize.fn("LOWER", Sequelize.col("headline")), "LIKE", "%" + stringFilter.toLowerCase() + "%"),
         }),
       },
       order: [
