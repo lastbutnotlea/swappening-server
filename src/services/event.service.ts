@@ -175,11 +175,11 @@ export class EventService {
    * Gets a numer of events for a given user to watch next
    * // TODO this is just returning random events right now
    * @param userId
-   * @param number
+   * @param count
    * @param tagFilter
    * @param stringFilter
    */
-  public getEventsForUser(userId: number, number: number, tagFilter: string[], stringFilter: string) {
+  public getEventsForUser(userId: number, count: number, tagFilter: string[], stringFilter: string) {
     Event.hasMany(Picture, { foreignKey: "eventId" });
     Picture.belongsTo(Event, { foreignKey: "eventId" });
     Event.hasMany(LeftSwipe, { foreignKey: "eventId" });
@@ -193,9 +193,11 @@ export class EventService {
 
 
     return Event.findAll({
+      limit: count,
       include: [
         {
           model: Picture,
+          duplicating: false,
         },
         {
           model: LeftSwipe,
@@ -204,6 +206,7 @@ export class EventService {
             userId,
           },
           required: false,
+          duplicating: false,
         },
         {
           model: RightSwipe,
@@ -212,6 +215,7 @@ export class EventService {
             userId,
           },
           required: false,
+          duplicating: false,
         },
         {
           model: TaggedEvent,
@@ -222,6 +226,7 @@ export class EventService {
               model: Tag,
               attributes: ["tagName"],
             },
+          duplicating: false,
         },
       ],
       where: {
@@ -238,6 +243,7 @@ export class EventService {
         ["createdAt", "desc"],
         [Picture, "order", "asc"],
       ], attributes: EventService.eventAttributes,
+
     }) as Bluebird<EventViewModel>;
   }
 
