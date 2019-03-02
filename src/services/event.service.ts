@@ -188,12 +188,12 @@ export class EventService {
     RightSwipe.belongsTo(Event, { foreignKey: "eventId" });
     Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
     TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
-    Tag.hasMany(TaggedEvent, { foreignKey: "tagId" });
     TaggedEvent.belongsTo(Tag, { foreignKey: "tagId" });
 
 
+
     return Event.findAll({
-      limit: count,
+      // limit: count,
       include: [
         {
           model: Picture,
@@ -219,8 +219,8 @@ export class EventService {
         },
         {
           model: TaggedEvent,
-          required: false,
           attributes: EventService.taggedEventAttributes,
+          required: false,
           include:
             {
               model: Tag,
@@ -244,7 +244,7 @@ export class EventService {
         [Picture, "order", "asc"],
       ], attributes: EventService.eventAttributes,
 
-    }) as Bluebird<EventViewModel>;
+    });
   }
 
   /**
