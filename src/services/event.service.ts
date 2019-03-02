@@ -8,7 +8,7 @@ import { sequelize } from "../instances/sequelize";
 import { RightSwipe, RightSwipeModel } from "../models/rightSwipe.model";
 import { TaggedEvent } from "../models/taggedEvent.model";
 import { Tag } from "../models/tag.model";
-
+const Op = sequelize.Op;
 
 export class EventService {
 
@@ -193,7 +193,6 @@ export class EventService {
 
 
     return Event.findAll({
-      // limit: count,
       include: [
         {
           model: Picture,
@@ -232,6 +231,7 @@ export class EventService {
       where: {
         "$leftSwipes.userId$": null,
         "$rightSwipes.userId$": null,
+        ownerId: {[Op.ne]: userId},
         ...(tagFilter != null && { "$taggedEvents.tagId$": tagFilter }),
 
         ...(stringFilter != null && {
