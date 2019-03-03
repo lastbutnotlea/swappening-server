@@ -73,7 +73,7 @@ io.on("connection", (socket) => {
       console.log("before routing message");
       if (socketsOfUser.has(+chatPartnerId)) {
         console.log("socket found");
-        socketsOfUser.get(+chatPartnerId).emit("message", message);
+        socketsOfUser.get(+chatPartnerId).emit("message", chatId, isMessageOfOwner, message);
       }
       chatService.addMessage({ chatId, isMessageOfOwner: isMessageOfOwner, message });
     });
