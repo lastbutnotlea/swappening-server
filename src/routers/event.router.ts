@@ -136,12 +136,16 @@ eventRouter.put("/:id", async (req, res) => {
  * Returns number of next events for a certain user.
  * Pictures have to be loaded manually later
  */
-eventRouter.get("/forUser/:userId/:number", async (req, res) => {
+eventRouter.get("/forUser/:userId/:number/:tagFilter?/:stringFilter?", async (req, res) => {
   // TODO Verify id
 
   let tagFilter: TaggedEventViewModel[];
-  if (req.body.tagFilter !== undefined) {
-    tagFilter = req.body.tagFilter.map(async (tagString) => {
+  let stringFilter: string = req.params.stringFilter;
+  if (req.params.stringFilter === undefined){
+    stringFilter = null;
+  }
+  if (req.params.tagFilter !== undefined && req.params.tagFilter !== "") {
+    tagFilter = req.params.tagFilter.split(",").map(async (tagString) => {
       return tagService.getTagByTagName(tagString);
     });
     Promise.all(tagFilter).then((tagFilterDone) => {
@@ -150,12 +154,12 @@ eventRouter.get("/forUser/:userId/:number", async (req, res) => {
             return ""+tag.id;
           else return "0";
         });
-        const event = eventService.getEventsForUser(req.params.userId, req.params.number, tagFilterString, req.body.stringFilter);
+        const event = eventService.getEventsForUser(req.params.userId, req.params.number, tagFilterString, req.params.stringFilter);
         return event.then((u) => res.json(u.slice(1, +req.params.number + 1)));
       },
     );
   } else {
-    const event = eventService.getEventsForUser(req.params.userId, req.params.number, null, req.body.stringFilter);
+    const event = eventService.getEventsForUser(req.params.userId, req.params.number, null, req.params.stringFilter);
     return event.then((u) => res.json(u.slice(1, +req.params.number + 1)));
   }
 
