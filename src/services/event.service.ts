@@ -238,7 +238,7 @@ export class EventService {
         }),
       },
       order: [
-        ["createdAt", "desc"],
+        ["createdAt", "asc"],
         [Picture, "order", "asc"],
       ], attributes: EventService.eventAttributes,
 
