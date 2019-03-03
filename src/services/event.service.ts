@@ -291,7 +291,6 @@ export class EventService {
     TaggedEvent.belongsTo(Tag, { foreignKey: "tagId" });
 
     return Event.findAll({
-      where: { ownerId: userId },
       attributes: EventService.eventAttributes,
       include: [Picture, {
         model: TaggedEvent,
@@ -327,7 +326,6 @@ export class EventService {
     TaggedEvent.belongsTo(Tag, { foreignKey: "tagId" });
 
     return Event.findAll({
-      where: { ownerId: userId },
       attributes: EventService.eventAttributes,
       include: [Picture, {
         model: TaggedEvent,
