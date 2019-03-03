@@ -2,12 +2,11 @@ import * as Bluebird from "bluebird";
 import { Event, EventAddModel, EventModel, EventViewModel } from "../models/event.model";
 import { Picture, PictureAddModel, PictureViewModel } from "../models/picture.model";
 import { LeftSwipe, LeftSwipeModel } from "../models/leftSwipe.model";
-import { Sequelize } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import * as fs from "fs";
-import { sequelize } from "../instances/sequelize";
 import { RightSwipe, RightSwipeModel } from "../models/rightSwipe.model";
 import { TaggedEvent } from "../models/taggedEvent.model";
-
+import { Tag } from "../models/tag.model";
 
 export class EventService {
 
@@ -17,6 +16,10 @@ export class EventService {
 
   static get pictureAttributes() {
     return ["pictureStorageName", "eventId", "originalName"];
+  }
+
+  static get taggedEventAttributes() {
+    return ["tagId"];
   }
 
   /**
@@ -122,14 +125,29 @@ export class EventService {
   public getEventById(id: number) {
     Event.hasMany(Picture, { foreignKey: "eventId" });
     Picture.belongsTo(Event, { foreignKey: "eventId" });
+    Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
+    TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
+    Tag.hasMany(TaggedEvent, { foreignKey: "tagId" });
+    TaggedEvent.belongsTo(Tag, { foreignKey: "tagId" });
+
 
     return Event.findByPk(id, {
       attributes: EventService.eventAttributes,
-      include: [Picture],
+      include: [Picture,
+        {
+          model: TaggedEvent,
+          required: false,
+          attributes: EventService.taggedEventAttributes,
+          include:
+            {
+              model: Tag,
+              attributes: ["tagName"],
+            },
+        }],
       order: [
         [Picture, "order", "asc"],
       ],
-    }) as Bluebird<EventViewModel>;
+    });
   }
 
 
@@ -137,7 +155,7 @@ export class EventService {
    * Returns the id of the event for the a given id
    * @param id
    */
-  public async getOwnerIdById(id: number) {
+  public static async getOwnerIdById(id: number) {
     Event.hasMany(Picture, { foreignKey: "eventId" });
     Picture.belongsTo(Event, { foreignKey: "eventId" });
 
@@ -155,11 +173,11 @@ export class EventService {
    * Gets a numer of events for a given user to watch next
    * // TODO this is just returning random events right now
    * @param userId
-   * @param number
+   * @param count
    * @param tagFilter
    * @param stringFilter
    */
-  public getEventsForUser(userId: number, number: number, tagFilter: string[], stringFilter: string) {
+  public getEventsForUser(userId: number, count: number, tagFilter: string[], stringFilter: string) {
     Event.hasMany(Picture, { foreignKey: "eventId" });
     Picture.belongsTo(Event, { foreignKey: "eventId" });
     Event.hasMany(LeftSwipe, { foreignKey: "eventId" });
@@ -168,11 +186,15 @@ export class EventService {
     RightSwipe.belongsTo(Event, { foreignKey: "eventId" });
     Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
     TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
+    TaggedEvent.belongsTo(Tag, { foreignKey: "tagId" });
+
+
 
     return Event.findAll({
       include: [
         {
           model: Picture,
+          duplicating: false,
         },
         {
           model: LeftSwipe,
@@ -181,6 +203,7 @@ export class EventService {
             userId,
           },
           required: false,
+          duplicating: false,
         },
         {
           model: RightSwipe,
@@ -189,29 +212,37 @@ export class EventService {
             userId,
           },
           required: false,
+          duplicating: false,
         },
         {
           model: TaggedEvent,
-          attributes: ["tagId"],
+          attributes: EventService.taggedEventAttributes,
           required: false,
-
+          include:
+            {
+              model: Tag,
+              attributes: ["tagName"],
+            },
+          duplicating: false,
         },
       ],
       where: {
         "$leftSwipes.userId$": null,
         "$rightSwipes.userId$": null,
+        ownerId: {[Op.ne]: userId},
         ...(tagFilter != null && { "$taggedEvents.tagId$": tagFilter }),
 
         ...(stringFilter != null && {
-          headline: sequelize.where(
-            sequelize.fn("LOWER", sequelize.col("headline")), "LIKE", "%" + stringFilter.toLowerCase() + "%"),
+          headline: Sequelize.where(
+            Sequelize.fn("LOWER", Sequelize.col("headline")), "LIKE", "%" + stringFilter.toLowerCase() + "%"),
         }),
       },
       order: [
         ["createdAt", "desc"],
         [Picture, "order", "asc"],
       ], attributes: EventService.eventAttributes,
-    }) as Bluebird<EventViewModel>;
+
+    });
   }
 
   /**
@@ -221,11 +252,24 @@ export class EventService {
   public getEventsOfUser(userId: number) {
     Event.hasMany(Picture, { foreignKey: "eventId" });
     Picture.belongsTo(Event, { foreignKey: "eventId" });
+    Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
+    TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
+    Tag.hasMany(TaggedEvent, { foreignKey: "tagId" });
+    TaggedEvent.belongsTo(Tag, { foreignKey: "tagId" });
 
     return Event.findAll({
       where: { ownerId: userId },
       attributes: EventService.eventAttributes,
-      include: [Picture],
+      include: [Picture, {
+        model: TaggedEvent,
+        required: false,
+        attributes: EventService.taggedEventAttributes,
+        include:
+          {
+            model: Tag,
+            attributes: ["tagName"],
+          },
+      }],
       order: [
         [Picture, "order", "asc"],
       ],
@@ -241,11 +285,24 @@ export class EventService {
     Picture.belongsTo(Event, { foreignKey: "eventId" });
     Event.hasMany(RightSwipe, { foreignKey: "eventId" });
     RightSwipe.belongsTo(Event, { foreignKey: "eventId" });
+    Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
+    TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
+    Tag.hasMany(TaggedEvent, { foreignKey: "tagId" });
+    TaggedEvent.belongsTo(Tag, { foreignKey: "tagId" });
 
     return Event.findAll({
       where: { ownerId: userId },
       attributes: EventService.eventAttributes,
       include: [Picture, {
+        model: TaggedEvent,
+        required: false,
+        attributes: EventService.taggedEventAttributes,
+        include:
+          {
+            model: Tag,
+            attributes: ["tagName"],
+          },
+      }, {
         model: RightSwipe,
         where: { userId },
       }],
@@ -264,11 +321,24 @@ export class EventService {
     Picture.belongsTo(Event, { foreignKey: "eventId" });
     Event.hasMany(RightSwipe, { foreignKey: "eventId" });
     RightSwipe.belongsTo(Event, { foreignKey: "eventId" });
+    Event.hasMany(TaggedEvent, { foreignKey: "eventId" });
+    TaggedEvent.belongsTo(Event, { foreignKey: "eventId" });
+    Tag.hasMany(TaggedEvent, { foreignKey: "tagId" });
+    TaggedEvent.belongsTo(Tag, { foreignKey: "tagId" });
 
     return Event.findAll({
       where: { ownerId: userId },
       attributes: EventService.eventAttributes,
       include: [Picture, {
+        model: TaggedEvent,
+        required: false,
+        attributes: EventService.taggedEventAttributes,
+        include:
+          {
+            model: Tag,
+            attributes: ["tagName"],
+          },
+      }, {
         model: RightSwipe,
         where: { userId, accepted: true },
       }],

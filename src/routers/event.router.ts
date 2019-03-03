@@ -9,8 +9,9 @@ import * as multer from "multer";
 import { UserService } from "../services/user.service";
 import { TaggedEventService } from "../services/taggedEvent.service";
 import { TagService } from "../services/tag.service";
-import { TaggedEventAddModel, TaggedEventModel } from "../models/taggedEvent.model";
+import { TaggedEventAddModel, TaggedEventModel, TaggedEventViewModel } from "../models/taggedEvent.model";
 import { AuthorizationService } from "../services/authorization.service";
+import { TagModel, TagViewModel } from "../models/tag.model";
 
 export const eventRouter = Router();
 const eventService = new EventService();
@@ -38,7 +39,7 @@ eventRouter.post("/", eventRules.eventAdd, async (req, res) => {
   if (payloadEvent.startTime.toString() === "") {
     payloadEvent.startTime = new Date(Date.now());
   }
-  const event = await eventService.addEvent(payloadEvent, ownerId);
+  let event = await eventService.addEvent(payloadEvent, ownerId);
 
   const tagArray = req.body.tags;
 
@@ -55,6 +56,7 @@ eventRouter.post("/", eventRules.eventAdd, async (req, res) => {
     }
   }
 
+  event = await eventService.getEventById(event.id);
   return res.json(event);
 });
 
@@ -75,7 +77,7 @@ eventRouter.get("/:id", async (req, res) => {
  */
 eventRouter.delete("/:id", async (req, res) => {
   let event = await eventService.getEventById(req.params.id);
-  if(event == null){
+  if (event == null) {
     return res.status(404).json("No Event with ID " + req.params.id + " found!");
   }
 
@@ -91,7 +93,7 @@ eventRouter.delete("/:id", async (req, res) => {
  * Returns all event data.
  * Pictures have to be loaded manually later
  */
-eventRouter.put("/:id", (req, res) => {
+eventRouter.put("/:id", async (req, res) => {
   // TODO Verify id
   // TODO Verify user id
   const newEvent: EventModel = {
@@ -108,19 +110,58 @@ eventRouter.put("/:id", (req, res) => {
     createdAt: "",
     updatedAt: "",
   };
-  const event = eventService.updateEvent(newEvent);
-  return event.then((u) => res.json(u));
+
+  const tagArray = req.body.taggedEvents;
+
+  if (tagArray !== null) {
+    await taggedEventService.clearTagDataOfEvent(req.params.id);
+    for (const tagElement of tagArray) {
+      const tag = await tagService.getTagByTagName(tagElement);
+      if (tag !== null) {
+        const tagToEvent: TaggedEventAddModel = {
+          tagId: tag.id,
+          eventId: req.params.id,
+        };
+        await taggedEventService.addTagToEvent(tagToEvent);
+      }
+    }
+  }
+
+  const event = await eventService.updateEvent(newEvent);
+
+  return res.json(event);
 });
 
 /**
  * Returns number of next events for a certain user.
  * Pictures have to be loaded manually later
  */
-eventRouter.get("/forUser/:userId/:number", (req, res) => {
+eventRouter.get("/forUser/:userId/:number", async (req, res) => {
   // TODO Verify id
-  const event = eventService.getEventsForUser(req.params.userId, req.params.number, req.body.tagFilter, req.body.stringFilter);
-  return event.then((u) => res.json(u));
-});
+
+  let tagFilter: TaggedEventViewModel[];
+  if (req.body.tagFilter !== undefined) {
+    tagFilter = req.body.tagFilter.map(async (tagString) => {
+      return tagService.getTagByTagName(tagString);
+    });
+    Promise.all(tagFilter).then((tagFilterDone) => {
+        let tagFilterString = tagFilterDone.map(tag => {
+          if (tag !== null)
+            return ""+tag.id;
+          else return "0";
+        });
+        const event = eventService.getEventsForUser(req.params.userId, req.params.number, tagFilterString, req.body.stringFilter);
+        return event.then((u) => res.json(u.slice(1, +req.params.number + 1)));
+      },
+    );
+  } else {
+    const event = eventService.getEventsForUser(req.params.userId, req.params.number, null, req.body.stringFilter);
+    return event.then((u) => res.json(u.slice(1, +req.params.number + 1)));
+  }
+
+
+})
+;
 
 /**
  * Returns all events of a certain user.

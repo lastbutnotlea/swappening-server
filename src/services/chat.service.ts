@@ -7,6 +7,7 @@ import {
   MessageUserEventViewModel,
 } from "../models/messageUserEvent.model";
 import { ChatUserEvent, ChatUserEventAddModel, ChatUserEventViewModel } from "../models/chatUserEvent.model";
+import { EventService } from "./event.service";
 
 export class ChatService {
 
@@ -18,12 +19,12 @@ export class ChatService {
 
   public addMessage(message: MessageUserEventAddModel) {
     return MessageUserEvent.create(message);
-      // .then((t) => this.getMessageById(t.id));
+    // .then((t) => this.getMessageById(t.id));
   }
 
   public getMessages(chatId) {
     return MessageUserEvent.findAll({
-      where: {chatId},
+      where: { chatId },
       attributes: ["isMessageOfOwner", "message", "createdAt"],
       order: ["createdAt"],
     }) as Bluebird<MessageUserEventViewModel>;
@@ -35,7 +36,7 @@ export class ChatService {
 
   public getAllChatsOfUser(userId: number) {
     return ChatUserEvent.findAll({
-      where: {[Op.or]: [{ownerId: userId}, {userId: userId}]},
+      where: { [Op.or]: [{ ownerId: userId }, { userId: userId }] },
     }) as Bluebird<ChatUserEventViewModel>;
   }
 
@@ -55,4 +56,16 @@ export class ChatService {
     }
   }
   */
+  async initChat(eventId: any, userId: any) {
+    const ownerId = await EventService.getOwnerIdById(eventId);
+    return ChatUserEvent.findOrCreate({
+      where: {
+        userId,
+        eventId,
+      },
+      defaults: {
+        ownerId,
+      },
+    });
+  }
 }

@@ -58,6 +58,11 @@ chatRouter.get("/", (req, res) => {
     .catch((e) => res.status(400).json(e));
 });
 
+chatRouter.get("/init/:eventId/:userId", (req, res) => {
+  return chatService.initChat(req.params.eventId, req.params.userId)
+    .then(u => res.json(u));
+})
+
 
 io.on("connection", (socket) => {
   socket.on("userAuth", (token) => {
