@@ -155,12 +155,12 @@ eventRouter.get("/forUser/:userId/:number/:offset/:tagFilter?/:stringFilter?", a
           else return "0";
         });
         const event = eventService.getEventsForUser(req.params.userId, req.params.number, tagFilterString, req.params.stringFilter);
-        return event.then((u) => res.json(u.slice(+req.params.offset, +req.params.offset + +req.params.number + 1)));
+        return event.then((u) => res.json(u.slice(+req.params.offset, +req.params.offset + +req.params.number)));
       },
     );
   } else {
     const event = eventService.getEventsForUser(req.params.userId, req.params.number, null, req.params.stringFilter);
-    return event.then((u) => res.json(u.slice(+req.params.offset, +req.params.offset + +req.params.number + 1)));
+    return event.then((u) => res.json(u.slice(+req.params.offset, +req.params.offset + +req.params.number)));
   }
 
 
