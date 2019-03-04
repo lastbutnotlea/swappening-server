@@ -259,6 +259,21 @@ eventRouter.post("/image", upload.single("data"), (req, res) => {
 });
 
 /**
+ *  This is a endpoint for uploading form-data which contains the image and the eventId for the image
+ */
+eventRouter.post("/image/:storageName/:originalName", (req, res) => {
+  // TODO Verify these Parameters
+  const payload: PictureAddModel = {
+    eventId: req.body.eventId,
+    originalName: req.params.originalName,
+    pictureStorageName: req.params.storageName,
+  };
+  const picture = eventService.addPicture(payload);
+
+  return picture.then((u) => res.json(u));
+});
+
+/**
  * Route for deleting an event
  */
 eventRouter.delete("/image/:storageName", (req, res) => {
