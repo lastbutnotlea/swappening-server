@@ -189,7 +189,6 @@ export class EventService {
     TaggedEvent.belongsTo(Tag, { foreignKey: "tagId" });
 
 
-
     return Event.findAll({
       limit: count,
       include: [
@@ -230,7 +229,7 @@ export class EventService {
       where: {
         "$leftSwipes.userId$": null,
         "$rightSwipes.userId$": null,
-        ownerId: {[Op.ne]: userId},
+        ownerId: { [Op.ne]: userId },
         ...(tagFilter != null && { "$taggedEvents.tagId$": tagFilter }),
 
         ...(stringFilter != null && {
@@ -239,10 +238,16 @@ export class EventService {
         }),
       },
       order: [
-        ["createdAt", "asc"],
-        [Picture, "order", "asc"],
+        ["id", "asc"],
       ], attributes: EventService.eventAttributes,
 
+    }).then(res => {
+      res.forEach((event) => {
+        event.pictures_events.sort((a, b) => {
+          return a.order > b.order;
+        });
+      });
+      return res;
     });
   }
 
