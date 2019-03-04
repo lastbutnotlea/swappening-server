@@ -68,4 +68,22 @@ export class ChatService {
       },
     });
   }
+
+  public getChatById(id: number) {
+    return ChatUserEvent.findOne({
+      where: { id },
+    }) as Bluebird<ChatUserEventViewModel>;
+  }
+
+  public deleteChat(id: number) {
+    const promises: Sequelize.Promise[] = [];
+    MessageUserEvent.findAll({ where: { chatId: id } }).then((res) => {
+      res.forEach((message) => {
+        promises.push(MessageUserEvent.destroy({ where: { id: message.id } }));
+      });
+      Promise.all(promises).then(() => {
+        ChatUserEvent.destroy({ where: { id } });
+      });
+    });
+  }
 }

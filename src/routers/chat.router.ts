@@ -6,6 +6,7 @@ import { MessageUserEventAddModel } from "../models/messageUserEvent.model";
 import { UserService } from "../services/user.service";
 import { ChatUserEventAddModel } from "../models/chatUserEvent.model";
 import { Socket } from "socket.io";
+import { AuthorizationService } from "../services/authorization.service";
 
 export const chatRouter = Router();
 export const io = require("socket.io")(8085);
@@ -61,7 +62,21 @@ chatRouter.get("/", (req, res) => {
 chatRouter.get("/init/:eventId/:userId", (req, res) => {
   return chatService.initChat(req.params.eventId, req.params.userId)
     .then(u => res.json(u));
-})
+});
+
+chatRouter.delete("/:id", async (req, res) => {
+  const chat = await chatService.getChatById(req.params.id);
+  if (chat == null) {
+    return res.status(404).json("No Chat with ID " + req.params.id + " found!");
+  }
+
+  if (await AuthorizationService.isOwnerChatIdSameAsUserId(chat, req)) {
+    return res.status(401).json("Not authorized to delete event!");
+  }
+
+  chatService.deleteChat(req.params.id);
+  return res.status(200).json("success");
+});
 
 
 io.on("connection", (socket) => {

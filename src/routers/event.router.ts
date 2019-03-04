@@ -76,7 +76,7 @@ eventRouter.get("/:id", async (req, res) => {
  * Route for deleting an events
  */
 eventRouter.delete("/:id", async (req, res) => {
-  let event = await eventService.getEventById(req.params.id);
+  const event = await eventService.getEventById(req.params.id);
   if (event == null) {
     return res.status(404).json("No Event with ID " + req.params.id + " found!");
   }
