@@ -41,7 +41,7 @@ eventRouter.post("/", eventRules.eventAdd, async (req, res) => {
   }
   let event = await eventService.addEvent(payloadEvent, ownerId);
 
-  const tagArray = req.body.tags;
+  const tagArray = req.body.taggedEvents;
 
   if (tagArray !== null) {
     for (const tagElement of tagArray) {
