@@ -19,7 +19,7 @@ export const eventRules = {
       .exists().withMessage("hasChat must be specified"),
     check("isVisible")
       .exists().withMessage("isVisible must be specified"),
-    check("tags")
+    check("taggedEvents")
       .exists().withMessage("tags must be specified"),
   ],
   eventGet: [
