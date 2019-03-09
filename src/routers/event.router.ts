@@ -65,7 +65,7 @@ eventRouter.post("/", eventRules.eventAdd, async (req, res) => {
  * Pictures have to be loaded manually later
  */
 eventRouter.get("/:id", async (req, res) => {
-  if (await AuthorizationService.isOwnerEventIdSameAsUserId(eventService, req)) {
+  if (await AuthorizationService.isOwnerEventIdSameAsUserId(eventService, req.params.id, req)) {
     return res.status(401).json("Unauthorized");
   }
   const event = eventService.getEventById(req.params.id);
@@ -81,7 +81,7 @@ eventRouter.delete("/:id", async (req, res) => {
     return res.status(404).json("No Event with ID " + req.params.id + " found!");
   }
 
-  if (await AuthorizationService.isOwnerEventIdSameAsUserId(eventService, req)) {
+  if (await AuthorizationService.isOwnerEventIdSameAsUserId(eventService, req.params.id, req)) {
     return res.status(401).json("Not authorized to delete event!");
   }
 
@@ -198,6 +198,19 @@ eventRouter.get("/forUser/accepted", (req, res) => {
 });
 
 /**
+ * Returns the rightSwipe of of an user and an event if it exists
+ * Event must be owned by the current user
+ */
+eventRouter.get("/isUserAccepted/:eventId/:userId", async (req, res) => {
+  if (await AuthorizationService.isOwnerEventIdSameAsUserId(eventService, req.params.eventId, req)) {
+    return res.status(401).json("Unauthorized");
+  }
+
+  const rightSwipe = eventService.isUserAcceptedToEvent(req.params.eventId, req.params.userId);
+  return rightSwipe.then((u) => res.json(u));
+});
+
+/**
  * Endpoint for swiping items left or right
  */
 eventRouter.post("/swipe/:direction/:eventId", (req, res) => {
@@ -222,7 +235,7 @@ eventRouter.post("/swipe/:direction/:eventId", (req, res) => {
  * Endpoint for accepting or declining users
  */
 eventRouter.post("/swipeUser/:direction/:userId/:id", async (req, res) => {
-  if (await AuthorizationService.isOwnerEventIdSameAsUserId(eventService, req)) {
+  if (await AuthorizationService.isOwnerEventIdSameAsUserId(eventService, req.params.id, req)) {
     return res.status(401).json("Unauthorized");
   }
 

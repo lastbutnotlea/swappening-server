@@ -4,9 +4,9 @@ import { ChatUserEventViewModel } from "../models/chatUserEvent.model";
 
 export class AuthorizationService {
 
-  public static async isOwnerEventIdSameAsUserId(eventService: EventService, req: any) {
+  public static async isOwnerEventIdSameAsUserId(eventService: EventService, eventId: number, req: any) {
     const ownerId: number = UserService.getUserFromToken(req.headers.authorization.split(" ")[1]);
-    const eventOwnerId = await EventService.getOwnerIdById(req.params.id);
+    const eventOwnerId = await EventService.getOwnerIdById(eventId);
     return eventOwnerId !== ownerId;
   }
 

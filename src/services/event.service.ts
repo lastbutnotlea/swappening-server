@@ -352,6 +352,15 @@ export class EventService {
     }) as Bluebird<EventViewModel>;
   }
 
+  public isUserAcceptedToEvent(eventId: number, userId: number) {
+    Event.hasMany(RightSwipe, { foreignKey: "eventId" });
+    RightSwipe.belongsTo(Event, { foreignKey: "eventId" });
+
+    return RightSwipe.findAll({
+      where: { userId, eventId },
+    }) as Bluebird<RightSwipeModel>;
+  }
+
   public swipeEvent(eventId: number, userId: number, isLeftSwipe: boolean) {
     if (isLeftSwipe) {
       return LeftSwipe.create({ eventId, userId }) as Bluebird<LeftSwipeModel>;
