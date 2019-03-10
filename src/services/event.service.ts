@@ -190,7 +190,7 @@ export class EventService {
 
 
     return Event.findAll({
-      limit: count,
+      limit: 3 * count,
       include: [
         {
           model: Picture,
