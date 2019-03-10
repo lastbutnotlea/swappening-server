@@ -7,6 +7,8 @@ import * as fs from "fs";
 import { RightSwipe, RightSwipeModel } from "../models/rightSwipe.model";
 import { TaggedEvent } from "../models/taggedEvent.model";
 import { Tag } from "../models/tag.model";
+import { ChatService } from "./chat.service";
+import { TaggedEventService } from "./taggedEvent.service";
 
 export class EventService {
 
@@ -21,6 +23,9 @@ export class EventService {
   static get taggedEventAttributes() {
     return ["tagId"];
   }
+
+  private taggedEventService = new TaggedEventService();
+  private chatService = new ChatService();
 
   /**
    * Adds an event
@@ -39,6 +44,10 @@ export class EventService {
    */
   public deleteEvent(id: number) {
     const promises: Sequelize.Promise[] = [];
+    promises.push(RightSwipe.destroy({ where: {eventId: id} }));
+    promises.push(LeftSwipe.destroy({ where: {eventId: id} }));
+    promises.push(this.chatService.deleteAllChatsOfEvent(id));
+    promises.push(this.taggedEventService.clearTagDataOfEvent(id));
     /* .then Throws an error if there is no picture on an event */
     Picture.findAll({ where: { eventId: id } }).then((res) => {
       res.forEach((pic) => {

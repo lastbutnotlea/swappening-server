@@ -86,4 +86,20 @@ export class ChatService {
       });
     });
   }
+
+  public deleteAllChatsOfEvent(eventId: number) {
+    const promises: Sequelize.Promise[] = [];
+    ChatUserEvent.findAll({ where: { eventId } }).then((chats) => {
+      chats.forEach((chat) => {
+        MessageUserEvent.findAll({ where: { chatId: chat.id } }).then((messages) => {
+          messages.forEach((message) => {
+            promises.push(MessageUserEvent.destroy({ where: { id: message.id } }));
+          });
+          Promise.all(promises).then(() => {
+            return ChatUserEvent.destroy({ where: { id: chat.id } });
+          });
+        });
+      });
+    });
+  }
 }
